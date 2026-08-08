@@ -151,7 +151,7 @@ export default function AdminCouponsPage() {
   // Helper to determine expiry dynamically if status in DB is "unused"
   const getCouponStatus = (coupon: Coupon): "unused" | "used" | "expired" => {
     if (coupon.status === "used") return "used";
-    const expiresDate = coupon.expiresAt ? coupon.expiresAt.toDate() : new Date(0);
+    const expiresDate = coupon.expiresAt ? new Date(coupon.expiresAt) : new Date(0);
     if (expiresDate < new Date()) return "expired";
     return "unused";
   };
@@ -187,19 +187,19 @@ export default function AdminCouponsPage() {
     <div className="space-y-8 max-w-7xl mx-auto">
       {/* Title */}
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold font-serif text-white tracking-wide">
+        <h1 className="text-2xl md:text-3xl font-bold font-serif text-slate-800 tracking-wide">
           Manage Coupons
         </h1>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-slate-500">
           Search, filter, and redeem customer reward vouchers.
         </p>
       </div>
 
       {/* SEARCH AND FILTERS PANEL */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-slate-900 border border-slate-800/80 p-5 rounded-2xl">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
         {/* Search Input */}
         <div className="md:col-span-2 relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
             <Search size={16} />
           </div>
           <input
@@ -207,7 +207,7 @@ export default function AdminCouponsPage() {
             placeholder="Search by code, mobile, or customer name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="block w-full pl-10 pr-3 py-2.5 bg-slate-950 border border-slate-800 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-xs placeholder-slate-600 text-white outline-none transition duration-200"
+            className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-xs placeholder-slate-450 text-slate-800 outline-none transition duration-200"
           />
         </div>
 
@@ -216,14 +216,14 @@ export default function AdminCouponsPage() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="block w-full px-3 py-2.5 bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl text-xs text-slate-300 outline-none transition duration-200 cursor-pointer appearance-none"
+            className="block w-full px-3 py-2.5 bg-slate-50 border border-slate-200 focus:border-amber-500 rounded-xl text-xs text-slate-700 outline-none transition duration-200 cursor-pointer appearance-none"
           >
             <option value="all">All Statuses</option>
             <option value="unused">Active / Unused</option>
             <option value="used">Redeemed</option>
             <option value="expired">Expired</option>
           </select>
-          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-500">
+          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
             <Filter size={12} />
           </div>
         </div>
@@ -233,7 +233,7 @@ export default function AdminCouponsPage() {
           <select
             value={rewardFilter}
             onChange={(e) => setRewardFilter(e.target.value)}
-            className="block w-full px-3 py-2.5 bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl text-xs text-slate-300 outline-none transition duration-200 cursor-pointer appearance-none"
+            className="block w-full px-3 py-2.5 bg-slate-50 border border-slate-200 focus:border-amber-500 rounded-xl text-xs text-slate-700 outline-none transition duration-200 cursor-pointer appearance-none"
           >
             <option value="all">All Rewards</option>
             {rewardNames.map((name) => (
@@ -242,16 +242,16 @@ export default function AdminCouponsPage() {
               </option>
             ))}
           </select>
-          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-500">
+          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
             <Filter size={12} />
           </div>
         </div>
       </div>
 
       {/* DATA TABLE */}
-      <div className="bg-slate-900 border border-slate-800/60 rounded-2xl overflow-hidden shadow-xl">
+      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
         {loading ? (
-          <div className="flex flex-col justify-center items-center py-20 text-slate-500">
+          <div className="flex flex-col justify-center items-center py-20 text-slate-400">
             <Loader2 className="h-8 w-8 text-amber-500 animate-spin mb-3" />
             <p className="text-xs">Loading coupon records...</p>
           </div>
@@ -263,7 +263,7 @@ export default function AdminCouponsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-800/80 bg-slate-950 text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+                <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 text-[10px] font-bold uppercase tracking-wider">
                   <th className="px-6 py-4">Customer</th>
                   <th className="px-6 py-4">Instagram</th>
                   <th className="px-6 py-4">Reward</th>
@@ -274,45 +274,45 @@ export default function AdminCouponsPage() {
                   <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
+              <tbody className="divide-y divide-slate-200 text-xs text-slate-700">
                 {filteredCoupons.map((coupon) => {
                   const status = getCouponStatus(coupon);
                   return (
                     <tr
                       key={coupon.id}
-                      className="hover:bg-slate-950/40 transition duration-150 cursor-pointer"
+                      className="hover:bg-slate-50 transition duration-150 cursor-pointer"
                       onClick={() => setSelectedCoupon(coupon)}
                     >
                       {/* Customer Details */}
                       <td className="px-6 py-4">
-                        <div className="font-semibold text-slate-200">
+                        <div className="font-semibold text-slate-800">
                           {coupon.customerName}
                         </div>
-                        <div className="text-[10px] text-slate-500 mt-0.5">
+                        <div className="text-[10px] text-slate-400 mt-0.5">
                           {coupon.mobile}
                         </div>
                       </td>
 
                       {/* Instagram username */}
-                      <td className="px-6 py-4 font-semibold text-slate-400 font-mono">
+                      <td className="px-6 py-4 font-semibold text-slate-550 font-mono">
                         {coupon.instagramUsername ? `@${coupon.instagramUsername}` : "N/A"}
                       </td>
 
                       {/* Reward won */}
-                      <td className="px-6 py-4 font-medium text-amber-500">
+                      <td className="px-6 py-4 font-medium text-amber-600">
                         {coupon.rewardName}
                       </td>
 
                       {/* Coupon Code */}
-                      <td className="px-6 py-4 font-mono font-bold text-slate-200">
+                      <td className="px-6 py-4 font-mono font-bold text-slate-800">
                         <div className="flex items-center space-x-1.5" onClick={(e) => e.stopPropagation()}>
                           <span>{coupon.couponCode}</span>
                           <button
                             onClick={() => copyCode(coupon.id, coupon.couponCode)}
-                            className="p-1 text-slate-500 hover:text-white rounded transition"
+                            className="p-1 text-slate-400 hover:text-slate-700 rounded transition"
                           >
                             {copiedId === coupon.id ? (
-                              <Check size={12} className="text-green-500" />
+                              <Check size={12} className="text-green-600" />
                             ) : (
                               <Copy size={12} />
                             )}
@@ -321,35 +321,35 @@ export default function AdminCouponsPage() {
                       </td>
 
                       {/* Created Date */}
-                      <td className="px-6 py-4 text-slate-400">
+                      <td className="px-6 py-4 text-slate-500">
                         {coupon.createdAt
-                          ? coupon.createdAt.toDate().toLocaleDateString()
+                          ? new Date(coupon.createdAt).toLocaleDateString()
                           : "N/A"}
                       </td>
 
                       {/* Expiry Date */}
-                      <td className="px-6 py-4 text-slate-400">
+                      <td className="px-6 py-4 text-slate-500">
                         {coupon.expiresAt
-                          ? coupon.expiresAt.toDate().toLocaleDateString()
+                          ? new Date(coupon.expiresAt).toLocaleDateString()
                           : "N/A"}
                       </td>
 
                       {/* Status Tag */}
                       <td className="px-6 py-4">
                         {status === "used" && (
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-green-950/50 border border-green-500/30 text-green-400">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-green-50 border border-green-200 text-green-700">
                             <CheckCircle size={10} className="mr-1 shrink-0" />
                             Redeemed
                           </span>
                         )}
                         {status === "expired" && (
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-950/50 border border-rose-500/30 text-rose-400">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-50 border border-rose-200 text-rose-700">
                             <XCircle size={10} className="mr-1 shrink-0" />
                             Expired
                           </span>
                         )}
                         {status === "unused" && (
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-950/40 border border-amber-500/20 text-amber-400">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 border border-amber-200 text-amber-700">
                             <Clock size={10} className="mr-1 shrink-0" />
                             Active
                           </span>
@@ -381,93 +381,93 @@ export default function AdminCouponsPage() {
 
       {/* DETAIL MODAL */}
       {selectedCoupon && !showConfirmModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex justify-center items-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 w-full max-w-md space-y-6 relative animate-fade-in">
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex justify-center items-center p-4">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-2xl p-6 w-full max-w-md space-y-6 relative animate-fade-in text-slate-800">
             <div>
-              <h3 className="text-lg font-bold font-serif text-amber-500">Coupon Details</h3>
-              <p className="text-xs text-slate-500">Full audit log for verification.</p>
+              <h3 className="text-lg font-bold font-serif text-amber-600">Coupon Details</h3>
+              <p className="text-xs text-slate-400">Full audit log for verification.</p>
             </div>
 
-            <div className="space-y-3.5 text-xs text-slate-300">
-              <div className="flex items-center space-x-3 bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/40">
-                <User size={14} className="text-slate-500 shrink-0" />
+            <div className="space-y-3.5 text-xs text-slate-700">
+              <div className="flex items-center space-x-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                <User size={14} className="text-slate-400 shrink-0" />
                 <div>
-                  <p className="text-slate-500 text-[10px] uppercase tracking-wider font-semibold">Customer</p>
-                  <p className="font-medium text-slate-200 mt-0.5">{selectedCoupon.customerName}</p>
+                  <p className="text-slate-400 text-[10px] uppercase tracking-wider font-semibold">Customer</p>
+                  <p className="font-semibold text-slate-800 mt-0.5">{selectedCoupon.customerName}</p>
                 </div>
               </div>
 
-              <div className="flex items-center space-x-3 bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/40">
-                <Phone size={14} className="text-slate-500 shrink-0" />
+              <div className="flex items-center space-x-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                <Phone size={14} className="text-slate-400 shrink-0" />
                 <div>
-                  <p className="text-slate-500 text-[10px] uppercase tracking-wider font-semibold">Mobile Number</p>
-                  <p className="font-medium text-slate-200 mt-0.5">{selectedCoupon.mobile}</p>
+                  <p className="text-slate-400 text-[10px] uppercase tracking-wider font-semibold">Mobile Number</p>
+                  <p className="font-semibold text-slate-800 mt-0.5">{selectedCoupon.mobile}</p>
                 </div>
               </div>
 
-              <div className="flex items-center space-x-3 bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/40">
-                <svg className="h-3.5 w-3.5 text-slate-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <div className="flex items-center space-x-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                <svg className="h-3.5 w-3.5 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
                   <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                   <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
                 </svg>
                 <div>
-                  <p className="text-slate-500 text-[10px] uppercase tracking-wider font-semibold">Instagram Username</p>
-                  <p className="font-medium text-slate-200 mt-0.5">
+                  <p className="text-slate-400 text-[10px] uppercase tracking-wider font-semibold">Instagram Username</p>
+                  <p className="font-semibold text-slate-800 mt-0.5">
                     {selectedCoupon.instagramUsername ? `@${selectedCoupon.instagramUsername}` : "N/A"}
                   </p>
                 </div>
               </div>
 
               {selectedCoupon.email && (
-                <div className="flex items-center space-x-3 bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/40">
-                  <User size={14} className="text-slate-500 shrink-0" />
+                <div className="flex items-center space-x-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                  <User size={14} className="text-slate-400 shrink-0" />
                   <div>
-                    <p className="text-slate-500 text-[10px] uppercase tracking-wider font-semibold">Email</p>
-                    <p className="font-medium text-slate-200 mt-0.5">{selectedCoupon.email}</p>
+                    <p className="text-slate-400 text-[10px] uppercase tracking-wider font-semibold">Email</p>
+                    <p className="font-semibold text-slate-800 mt-0.5">{selectedCoupon.email}</p>
                   </div>
                 </div>
               )}
 
-              <div className="flex items-center space-x-3 bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/40">
-                <Gift size={14} className="text-slate-500 shrink-0" />
+              <div className="flex items-center space-x-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                <Gift size={14} className="text-slate-400 shrink-0" />
                 <div>
-                  <p className="text-slate-500 text-[10px] uppercase tracking-wider font-semibold">Winning Reward</p>
-                  <p className="font-medium text-amber-500 mt-0.5">{selectedCoupon.rewardName}</p>
+                  <p className="text-slate-400 text-[10px] uppercase tracking-wider font-semibold">Winning Reward</p>
+                  <p className="font-semibold text-amber-600 mt-0.5">{selectedCoupon.rewardName}</p>
                 </div>
               </div>
 
-              <div className="flex items-center space-x-3 bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/40">
-                <Calendar size={14} className="text-slate-500 shrink-0" />
+              <div className="flex items-center space-x-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                <Calendar size={14} className="text-slate-400 shrink-0" />
                 <div>
-                  <p className="text-slate-500 text-[10px] uppercase tracking-wider font-semibold">Validation Period</p>
-                  <p className="font-medium text-slate-200 mt-0.5">
-                    {selectedCoupon.createdAt ? selectedCoupon.createdAt.toDate().toLocaleDateString() : ""} -{" "}
-                    <span className="text-rose-400 font-semibold">
-                      {selectedCoupon.expiresAt ? selectedCoupon.expiresAt.toDate().toLocaleDateString() : ""}
+                  <p className="text-slate-400 text-[10px] uppercase tracking-wider font-semibold">Validation Period</p>
+                  <p className="font-semibold text-slate-850 mt-0.5">
+                    {selectedCoupon.createdAt ? new Date(selectedCoupon.createdAt).toLocaleDateString() : ""} -{" "}
+                    <span className="text-rose-600 font-bold">
+                      {selectedCoupon.expiresAt ? new Date(selectedCoupon.expiresAt).toLocaleDateString() : ""}
                     </span>
                   </p>
                 </div>
               </div>
 
               {/* Status and redemption logs */}
-              <div className="border-t border-slate-800/80 pt-4 space-y-2">
-                <p className="font-bold text-slate-400">Audit Status</p>
-                <div className="space-y-1">
+              <div className="border-t border-slate-200 pt-4 space-y-2">
+                <p className="font-bold text-slate-500">Audit Status</p>
+                <div className="space-y-1 text-slate-600">
                   <p>
-                    <span className="text-slate-500">Redemption Status:</span>{" "}
-                    <span className="font-bold uppercase">
+                    <span className="text-slate-400">Redemption Status:</span>{" "}
+                    <span className="font-bold uppercase text-slate-700">
                       {getCouponStatus(selectedCoupon)}
                     </span>
                   </p>
                   {selectedCoupon.status === "used" && (
                     <>
                       <p>
-                        <span className="text-slate-500">Redeemed At:</span>{" "}
-                        {selectedCoupon.usedAt ? selectedCoupon.usedAt.toDate().toLocaleString() : ""}
+                        <span className="text-slate-400">Redeemed At:</span>{" "}
+                        {selectedCoupon.usedAt ? new Date(selectedCoupon.usedAt).toLocaleString() : ""}
                       </p>
                       <p>
-                        <span className="text-slate-500">Authorized By:</span> {selectedCoupon.usedBy}
+                        <span className="text-slate-400">Authorized By:</span> {selectedCoupon.usedBy}
                       </p>
                     </>
                   )}
@@ -486,7 +486,7 @@ export default function AdminCouponsPage() {
               )}
               <button
                 onClick={() => setSelectedCoupon(null)}
-                className="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-xl transition duration-150 uppercase tracking-wider text-[11px] select-none cursor-pointer"
+                className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2 rounded-xl transition duration-150 uppercase tracking-wider text-[11px] select-none cursor-pointer"
               >
                 Close details
               </button>
@@ -497,22 +497,22 @@ export default function AdminCouponsPage() {
 
       {/* CONFIRMATION WORKFLOW MODAL */}
       {showConfirmModal && selectedCoupon && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex justify-center items-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 w-full max-w-sm space-y-6 relative animate-shake">
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex justify-center items-center p-4">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-2xl p-6 w-full max-w-sm space-y-6 relative animate-shake">
             <div className="text-center">
-              <CheckCircle size={36} className="text-amber-500 mx-auto mb-3" />
-              <h3 className="text-base font-bold text-white">Confirm Coupon Redemption</h3>
-              <p className="text-xs text-slate-400 mt-2 px-2 leading-relaxed">
-                Are you sure you want to mark coupon <span className="font-mono font-bold text-amber-500">{selectedCoupon.couponCode}</span> as used? This action is irreversible.
+              <CheckCircle size={36} className="text-green-600 mx-auto mb-3" />
+              <h3 className="text-base font-bold text-slate-800">Confirm Coupon Redemption</h3>
+              <p className="text-xs text-slate-500 mt-2 px-2 leading-relaxed">
+                Are you sure you want to mark coupon <span className="font-mono font-bold text-amber-600">{selectedCoupon.couponCode}</span> as used? This action is irreversible.
               </p>
             </div>
 
-            <div className="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800/40 text-xs space-y-1.5">
+            <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs space-y-1.5 text-slate-700">
               <p>
-                <span className="text-slate-500 font-semibold">Customer:</span> {selectedCoupon.customerName}
+                <span className="text-slate-400 font-semibold">Customer:</span> {selectedCoupon.customerName}
               </p>
               <p>
-                <span className="text-slate-500 font-semibold">Reward:</span> {selectedCoupon.rewardName}
+                <span className="text-slate-400 font-semibold">Reward:</span> {selectedCoupon.rewardName}
               </p>
             </div>
 
@@ -529,11 +529,8 @@ export default function AdminCouponsPage() {
                 disabled={updatingId !== null}
                 onClick={() => {
                   setShowConfirmModal(false);
-                  if (!selectedCoupon.usedAt) {
-                    // if it wasn't detail view, clear select
-                  }
                 }}
-                className="flex-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-white font-bold py-2 rounded-xl transition duration-150 uppercase tracking-wider text-[11px] select-none cursor-pointer"
+                className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2 rounded-xl transition duration-150 uppercase tracking-wider text-[11px] select-none cursor-pointer"
               >
                 Cancel
               </button>

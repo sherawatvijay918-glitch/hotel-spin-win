@@ -244,15 +244,15 @@ export default function AdminDashboardPage() {
       {/* Header section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 z-10 relative">
         <div>
-          <h1 className="text-2xl md:text-3xl font-light font-serif text-white tracking-wider">
+          <h1 className="text-2xl md:text-3xl font-light font-serif text-slate-800 tracking-wider">
             Dashboard Control Center
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 mt-1">
             Real-time metrics and coupon management for 7 Blue Hills.
           </p>
         </div>
-        <div className="flex items-center space-x-2 bg-slate-950/60 border border-amber-500/10 rounded-xl px-4 py-2 text-[10px] uppercase tracking-wider text-slate-400 font-bold self-start">
-          <Calendar size={12} className="text-amber-500" />
+        <div className="flex items-center space-x-2 bg-white border border-slate-200 shadow-sm rounded-xl px-4 py-2 text-[10px] uppercase tracking-wider text-slate-500 font-bold self-start">
+          <Calendar size={12} className="text-amber-600" />
           <span>Live Data Feed</span>
         </div>
       </div>
@@ -260,67 +260,62 @@ export default function AdminDashboardPage() {
       {/* STATISTICS CARDS */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Total Spins */}
-        <div className="hotel-card rounded-2xl p-5 flex flex-col justify-between transition duration-300 hover:border-amber-500/30 group">
-          <div className="hotel-card-inner-frame"></div>
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col justify-between transition duration-300 hover:border-amber-500/40 shadow-sm group relative">
           <div className="flex items-center justify-between text-slate-400 mb-4 z-10 relative">
-            <span className="text-[9px] font-bold uppercase tracking-wider text-amber-500/80">Total Spins</span>
-            <Activity className="h-4 w-4 text-amber-500/80" />
+            <span className="text-[9px] font-bold uppercase tracking-wider text-amber-600">Total Spins</span>
+            <Activity className="h-4 w-4 text-amber-600" />
           </div>
           <div className="z-10 relative">
-            <h3 className="text-3xl font-light text-white font-serif tracking-wide">{stats.totalSpins}</h3>
-            <p className="text-[9px] text-slate-500 mt-1 uppercase tracking-wider font-semibold">All participants</p>
+            <h3 className="text-3xl font-light text-slate-800 font-serif tracking-wide">{stats.totalSpins}</h3>
+            <p className="text-[9px] text-slate-450 mt-1 uppercase tracking-wider font-semibold">All participants</p>
           </div>
         </div>
 
         {/* Today's Spins */}
-        <div className="hotel-card rounded-2xl p-5 flex flex-col justify-between transition duration-300 hover:border-amber-500/30 group">
-          <div className="hotel-card-inner-frame"></div>
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col justify-between transition duration-300 hover:border-amber-500/40 shadow-sm group relative">
           <div className="flex items-center justify-between text-slate-400 mb-4 z-10 relative">
-            <span className="text-[9px] font-bold uppercase tracking-wider text-amber-500/80">Today</span>
-            <TrendingUp className="h-4 w-4 text-emerald-500" />
+            <span className="text-[9px] font-bold uppercase tracking-wider text-amber-600">Today</span>
+            <TrendingUp className="h-4 w-4 text-emerald-600" />
           </div>
           <div className="z-10 relative">
-            <h3 className="text-3xl font-light text-white font-serif tracking-wide">{stats.todaysSpins}</h3>
-            <p className="text-[9px] text-slate-500 mt-1 uppercase tracking-wider font-semibold">Since midnight</p>
+            <h3 className="text-3xl font-light text-slate-800 font-serif tracking-wide">{stats.todaysSpins}</h3>
+            <p className="text-[9px] text-slate-450 mt-1 uppercase tracking-wider font-semibold">Since midnight</p>
           </div>
         </div>
 
         {/* Active Coupons */}
-        <div className="hotel-card rounded-2xl p-5 flex flex-col justify-between transition duration-300 hover:border-amber-500/30 group">
-          <div className="hotel-card-inner-frame"></div>
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col justify-between transition duration-300 hover:border-amber-500/40 shadow-sm group relative">
           <div className="flex items-center justify-between text-slate-400 mb-4 z-10 relative">
-            <span className="text-[9px] font-bold uppercase tracking-wider text-amber-500/80">Active</span>
-            <Ticket className="h-4 w-4 text-cyan-500" />
+            <span className="text-[9px] font-bold uppercase tracking-wider text-amber-600">Active</span>
+            <Ticket className="h-4 w-4 text-cyan-600" />
           </div>
           <div className="z-10 relative">
-            <h3 className="text-3xl font-light text-white font-serif tracking-wide">{stats.activeCoupons}</h3>
-            <p className="text-[9px] text-slate-500 mt-1 uppercase tracking-wider font-semibold">Unused vouchers</p>
+            <h3 className="text-3xl font-light text-slate-800 font-serif tracking-wide">{stats.activeCoupons}</h3>
+            <p className="text-[9px] text-slate-455 mt-1 uppercase tracking-wider font-semibold">Unused vouchers</p>
           </div>
         </div>
 
         {/* Used Coupons */}
-        <div className="hotel-card rounded-2xl p-5 flex flex-col justify-between transition duration-300 hover:border-amber-500/30 group">
-          <div className="hotel-card-inner-frame"></div>
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col justify-between transition duration-300 hover:border-amber-500/40 shadow-sm group relative">
           <div className="flex items-center justify-between text-slate-400 mb-4 z-10 relative">
-            <span className="text-[9px] font-bold uppercase tracking-wider text-amber-500/80">Redeemed</span>
-            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+            <span className="text-[9px] font-bold uppercase tracking-wider text-amber-600">Redeemed</span>
+            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
           </div>
           <div className="z-10 relative">
-            <h3 className="text-3xl font-light text-white font-serif tracking-wide">{stats.usedCoupons}</h3>
-            <p className="text-[9px] text-slate-500 mt-1 uppercase tracking-wider font-semibold">Claimed ({getPercentage(stats.usedCoupons)}%)</p>
+            <h3 className="text-3xl font-light text-slate-800 font-serif tracking-wide">{stats.usedCoupons}</h3>
+            <p className="text-[9px] text-slate-455 mt-1 uppercase tracking-wider font-semibold">Claimed ({getPercentage(stats.usedCoupons)}%)</p>
           </div>
         </div>
 
         {/* Expired Coupons */}
-        <div className="hotel-card rounded-2xl p-5 col-span-2 lg:col-span-1 flex flex-col justify-between transition duration-300 hover:border-amber-500/30 group">
-          <div className="hotel-card-inner-frame"></div>
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 col-span-2 lg:col-span-1 flex flex-col justify-between transition duration-300 hover:border-amber-500/40 shadow-sm group relative">
           <div className="flex items-center justify-between text-slate-400 mb-4 z-10 relative">
-            <span className="text-[9px] font-bold uppercase tracking-wider text-amber-500/80">Expired</span>
-            <AlertTriangle className="h-4 w-4 text-rose-500" />
+            <span className="text-[9px] font-bold uppercase tracking-wider text-amber-600">Expired</span>
+            <AlertTriangle className="h-4 w-4 text-rose-600" />
           </div>
           <div className="z-10 relative">
-            <h3 className="text-3xl font-light text-white font-serif tracking-wide">{stats.expiredCoupons}</h3>
-            <p className="text-[9px] text-slate-500 mt-1 uppercase tracking-wider font-semibold">Out of validity</p>
+            <h3 className="text-3xl font-light text-slate-800 font-serif tracking-wide">{stats.expiredCoupons}</h3>
+            <p className="text-[9px] text-slate-455 mt-1 uppercase tracking-wider font-semibold">Out of validity</p>
           </div>
         </div>
       </div>
@@ -328,34 +323,33 @@ export default function AdminDashboardPage() {
       {/* DETAILED STATS - RECENT ACTIVITY & CHARTS */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* RECENT SPINS FEED */}
-        <div className="lg:col-span-2 hotel-card rounded-2xl p-6 space-y-4">
-          <div className="hotel-card-inner-frame"></div>
+        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 space-y-4 shadow-sm relative">
           <div className="flex items-center justify-between z-10 relative">
-            <h2 className="text-base font-light font-serif text-white tracking-wide">Recent Activity</h2>
+            <h2 className="text-base font-light font-serif text-slate-800 tracking-wide">Recent Activity</h2>
             <Link
               href="/admin/coupons"
-              className="text-[10px] text-amber-500 hover:text-amber-400 font-bold uppercase tracking-wider flex items-center gap-1 transition duration-150 border border-amber-500/10 hover:border-amber-500/30 bg-amber-500/5 px-2.5 py-1 rounded-lg"
+              className="text-[10px] text-amber-700 hover:text-amber-800 font-bold uppercase tracking-wider flex items-center gap-1 transition duration-150 border border-amber-500/20 hover:border-amber-500/40 bg-amber-50 px-2.5 py-1 rounded-lg"
             >
               <span>View All</span>
               <ArrowRight size={12} />
             </Link>
           </div>
  
-          <div className="divide-y divide-slate-800/40 z-10 relative">
+          <div className="divide-y divide-slate-100 z-10 relative">
             {recentSpins.length === 0 ? (
-              <div className="text-center py-12 text-slate-500 text-xs">
+              <div className="text-center py-12 text-slate-450 text-xs">
                 No spin history found. Place QR codes around the hotel to get started!
               </div>
             ) : (
               recentSpins.map((spin) => (
-                <div key={spin.id} className="py-3 flex items-center justify-between text-xs gap-4 border-b border-slate-900/40">
+                <div key={spin.id} className="py-3 flex items-center justify-between text-xs gap-4 border-b border-slate-100">
                   <div className="min-w-0">
-                    <p className="font-semibold text-slate-200 truncate">{spin.customerName}</p>
-                    <p className="text-slate-500 text-[10px] font-mono mt-0.5">{spin.mobile}</p>
+                    <p className="font-semibold text-slate-800 truncate">{spin.customerName}</p>
+                    <p className="text-slate-450 text-[10px] font-mono mt-0.5">{spin.mobile}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="font-semibold text-amber-500/90">{spin.rewardName}</p>
-                    <p className="text-[10px] text-slate-500 font-mono mt-0.5">{spin.couponCode}</p>
+                    <p className="font-semibold text-amber-600">{spin.rewardName}</p>
+                    <p className="text-[10px] text-slate-455 font-mono mt-0.5">{spin.couponCode}</p>
                   </div>
                 </div>
               ))
@@ -364,16 +358,15 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* REWARD DISTRIBUTION CHART */}
-        <div className="hotel-card rounded-2xl p-6 flex flex-col justify-between space-y-4">
-          <div className="hotel-card-inner-frame"></div>
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col justify-between space-y-4 shadow-sm relative">
           <div className="z-10 relative">
-            <h2 className="text-base font-light font-serif text-white tracking-wide mb-0.5">Reward Distribution</h2>
-            <p className="text-[9px] text-slate-500 uppercase tracking-wider font-semibold">Breakdown of rewards claims.</p>
+            <h2 className="text-base font-light font-serif text-slate-800 tracking-wide mb-0.5">Reward Distribution</h2>
+            <p className="text-[9px] text-slate-450 uppercase tracking-wider font-semibold">Breakdown of rewards claims.</p>
           </div>
  
           <div className="space-y-4 flex-1 flex flex-col justify-center z-10 relative">
             {Object.keys(rewardCounts).length === 0 ? (
-              <div className="text-center py-12 text-slate-500 text-xs">No distribution data.</div>
+              <div className="text-center py-12 text-slate-450 text-xs">No distribution data.</div>
             ) : (
               Object.keys(rewardCounts)
                 .sort((a, b) => rewardCounts[b] - rewardCounts[a])
@@ -384,14 +377,14 @@ export default function AdminDashboardPage() {
                   return (
                     <div key={rewardName} className="space-y-1">
                       <div className="flex justify-between text-[11px] font-medium">
-                        <span className="text-slate-300 truncate max-w-[150px]">{rewardName}</span>
-                        <span className="text-slate-400 shrink-0 font-mono">
+                        <span className="text-slate-700 truncate max-w-[150px]">{rewardName}</span>
+                        <span className="text-slate-500 shrink-0 font-mono">
                           {count} ({percentage}%)
                         </span>
                       </div>
-                      <div className="h-1.5 w-full bg-slate-950/60 rounded-full overflow-hidden border border-slate-900">
+                      <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200">
                         <div
-                          className="h-full bg-gradient-to-r from-amber-600 to-amber-300 rounded-full"
+                          className="h-full bg-gradient-to-r from-amber-600 to-amber-400 rounded-full"
                           style={{ width: `${percentage}%` }}
                         ></div>
                       </div>
@@ -404,16 +397,15 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* DAILY ACTIVITY CHART */}
-      <div className="hotel-card rounded-2xl p-6 space-y-4">
-        <div className="hotel-card-inner-frame"></div>
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 shadow-sm relative">
         <div className="z-10 relative">
-          <h2 className="text-base font-light font-serif text-white tracking-wide mb-0.5">Spin Traffic Trend</h2>
-          <p className="text-[9px] text-slate-500 uppercase tracking-wider font-semibold">Activity logged over the last active days.</p>
+          <h2 className="text-base font-light font-serif text-slate-800 tracking-wide mb-0.5">Spin Traffic Trend</h2>
+          <p className="text-[9px] text-slate-450 uppercase tracking-wider font-semibold">Activity logged over the last active days.</p>
         </div>
  
-        <div className="h-48 flex items-end justify-between px-4 pt-4 border-b border-l border-slate-850/80 z-10 relative">
+        <div className="h-48 flex items-end justify-between px-4 pt-4 border-b border-l border-slate-200 z-10 relative">
           {dailyActivity.length === 0 ? (
-            <div className="w-full text-center py-12 text-slate-500 text-xs">No traffic trend recorded.</div>
+            <div className="w-full text-center py-12 text-slate-450 text-xs">No traffic trend recorded.</div>
           ) : (
             dailyActivity.map((day) => {
               const maxCount = Math.max(...dailyActivity.map((d) => d.count), 1);
@@ -421,15 +413,15 @@ export default function AdminDashboardPage() {
               return (
                 <div key={day.date} className="flex-1 flex flex-col items-center group relative px-1">
                   {/* Tooltip */}
-                  <div className="absolute top-[-30px] bg-slate-950 border border-amber-500/20 text-[10px] text-amber-500 px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 font-mono shadow-md z-10">
+                  <div className="absolute top-[-30px] bg-slate-800 text-[10px] text-white px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 font-mono shadow-md z-10">
                     {day.count}
                   </div>
                   {/* Visual Bar */}
                   <div
-                    className="w-8 md:w-12 bg-gradient-to-t from-amber-600/10 to-amber-500/20 hover:from-amber-600/40 hover:to-amber-400/50 border border-amber-500/20 hover:border-amber-500/50 rounded-t-lg transition-all duration-300 shadow-[0_0_15px_rgba(212,175,55,0.05)] cursor-pointer"
+                    className="w-8 md:w-12 bg-gradient-to-t from-amber-500/10 to-amber-500/30 hover:from-amber-500/30 hover:to-amber-500/50 border border-amber-500/20 hover:border-amber-500/40 rounded-t-lg transition-all duration-300 cursor-pointer"
                     style={{ height: `${barHeight}%` }}
                   ></div>
-                  <span className="text-[9px] text-slate-500 mt-2 font-bold uppercase tracking-wider shrink-0 select-none">
+                  <span className="text-[9px] text-slate-400 mt-2 font-bold uppercase tracking-wider shrink-0 select-none">
                     {day.date}
                   </span>
                 </div>

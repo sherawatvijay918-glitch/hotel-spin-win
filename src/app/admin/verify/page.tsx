@@ -135,7 +135,7 @@ function VerificationForm() {
   // Status evaluator helper
   const getCouponStatus = (cp: Coupon): "unused" | "used" | "expired" => {
     if (cp.status === "used") return "used";
-    const expiresDate = cp.expiresAt ? cp.expiresAt.toDate() : new Date(0);
+    const expiresDate = cp.expiresAt ? new Date(cp.expiresAt) : new Date(0);
     if (expiresDate < new Date()) return "expired";
     return "unused";
   };
@@ -143,11 +143,11 @@ function VerificationForm() {
   const status = coupon ? getCouponStatus(coupon) : null;
 
   return (
-    <div className="max-w-xl mx-auto space-y-8">
+    <div className="max-w-xl mx-auto space-y-8 text-slate-850">
       {/* Verify Code Search Form */}
       <form onSubmit={handleSearchSubmit} className="flex gap-2">
         <div className="relative flex-1">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
             <Ticket size={16} />
           </div>
           <input
@@ -157,13 +157,13 @@ function VerificationForm() {
             onChange={(e) => setCode(e.target.value)}
             disabled={loading}
             required
-            className="block w-full pl-10 pr-3 py-3 bg-slate-900 border border-slate-800 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-sm placeholder-slate-650 text-white font-mono uppercase outline-none transition duration-200"
+            className="block w-full pl-10 pr-3 py-3 bg-white border border-slate-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-sm placeholder-slate-400 text-slate-800 font-mono uppercase outline-none transition duration-200 shadow-sm"
           />
         </div>
         <button
           type="submit"
           disabled={loading}
-          className="bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 font-bold px-6 rounded-xl flex items-center gap-1.5 transition duration-150 text-sm select-none cursor-pointer"
+          className="bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white font-bold px-6 rounded-xl flex items-center gap-1.5 transition duration-150 text-sm select-none cursor-pointer"
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
           <span>Verify</span>
@@ -172,18 +172,18 @@ function VerificationForm() {
 
       {/* VERIFICATION FEEDBACK CARDS */}
       {loading && (
-        <div className="text-center py-12 text-slate-500 text-sm flex flex-col items-center gap-2">
+        <div className="text-center py-12 text-slate-400 text-sm flex flex-col items-center gap-2">
           <Loader2 className="h-6 w-6 text-amber-500 animate-spin" />
           <span>Searching database...</span>
         </div>
       )}
 
       {checked && error && (
-        <div className="bg-rose-950/40 border border-rose-500/30 rounded-2xl p-6 text-center space-y-4 animate-fade-in">
-          <XCircle className="h-12 w-12 text-rose-500 mx-auto" />
+        <div className="bg-rose-50 border border-rose-200 rounded-2xl p-6 text-center space-y-4 animate-fade-in text-rose-800">
+          <XCircle className="h-12 w-12 text-rose-600 mx-auto" />
           <div className="space-y-1">
-            <h3 className="text-lg font-bold text-rose-400">❌ INVALID COUPON</h3>
-            <p className="text-xs text-rose-200/80 leading-normal">{error}</p>
+            <h3 className="text-lg font-bold text-rose-700">❌ INVALID COUPON</h3>
+            <p className="text-xs text-rose-750 leading-normal">{error}</p>
           </div>
           <button
             onClick={() => setChecked(false)}
@@ -195,88 +195,88 @@ function VerificationForm() {
       )}
 
       {checked && coupon && status && (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-6 shadow-2xl animate-fade-in">
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-6 shadow-md animate-fade-in text-slate-800">
           {/* Status Alert Panels */}
           {status === "unused" && (
-            <div className="bg-green-950/50 border border-green-500/30 rounded-xl p-4 flex items-center gap-3.5 text-green-300">
-              <CheckCircle className="h-8 w-8 text-green-500 shrink-0" />
+            <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3.5 text-green-800">
+              <CheckCircle className="h-8 w-8 text-green-600 shrink-0" />
               <div>
                 <h4 className="font-bold text-sm tracking-wider uppercase">✅ VALID COUPON</h4>
-                <p className="text-[11px] text-green-200/80 mt-0.5">This coupon is active and ready for redemption.</p>
+                <p className="text-[11px] text-green-700 mt-0.5">This coupon is active and ready for redemption.</p>
               </div>
             </div>
           )}
 
           {status === "used" && (
-            <div className="bg-amber-950/40 border border-amber-500/30 rounded-xl p-4 flex items-center gap-3.5 text-amber-300">
-              <AlertTriangle className="h-8 w-8 text-amber-500 shrink-0" />
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3.5 text-amber-800">
+              <AlertTriangle className="h-8 w-8 text-amber-600 shrink-0" />
               <div>
                 <h4 className="font-bold text-sm tracking-wider uppercase">⚠️ COUPON ALREADY USED</h4>
-                <p className="text-[11px] text-amber-200/80 mt-0.5">
-                  Redeemed on {coupon.usedAt?.toDate().toLocaleString()} by {coupon.usedBy}.
+                <p className="text-[11px] text-amber-700 mt-0.5">
+                  Redeemed on {coupon.usedAt ? new Date(coupon.usedAt).toLocaleString() : ""} by {coupon.usedBy}.
                 </p>
               </div>
             </div>
           )}
 
           {status === "expired" && (
-            <div className="bg-rose-950/40 border border-rose-500/30 rounded-xl p-4 flex items-center gap-3.5 text-rose-300">
-              <Clock className="h-8 w-8 text-rose-500 shrink-0" />
+            <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 flex items-center gap-3.5 text-rose-800">
+              <Clock className="h-8 w-8 text-rose-600 shrink-0" />
               <div>
                 <h4 className="font-bold text-sm tracking-wider uppercase">⌛ COUPON EXPIRED</h4>
-                <p className="text-[11px] text-rose-200/80 mt-0.5">
-                  Validity expired on {coupon.expiresAt?.toDate().toLocaleDateString()}.
+                <p className="text-[11px] text-rose-700 mt-0.5">
+                  Validity expired on {coupon.expiresAt ? new Date(coupon.expiresAt).toLocaleDateString() : ""}.
                 </p>
               </div>
             </div>
           )}
 
           {/* Coupon Info details */}
-          <div className="space-y-3.5 text-xs text-slate-300">
-            <div className="flex items-center space-x-3 bg-slate-950/50 p-3 rounded-xl border border-slate-800/40">
-              <User size={14} className="text-slate-500 shrink-0" />
+          <div className="space-y-3.5 text-xs text-slate-700">
+            <div className="flex items-center space-x-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+              <User size={14} className="text-slate-400 shrink-0" />
               <div>
-                <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Customer Name</p>
-                <p className="font-semibold text-slate-200 mt-0.5">{coupon.customerName}</p>
+                <p className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Customer Name</p>
+                <p className="font-semibold text-slate-800 mt-0.5">{coupon.customerName}</p>
               </div>
             </div>
 
-            <div className="flex items-center space-x-3 bg-slate-950/50 p-3 rounded-xl border border-slate-800/40">
-              <Phone size={14} className="text-slate-500 shrink-0" />
+            <div className="flex items-center space-x-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+              <Phone size={14} className="text-slate-400 shrink-0" />
               <div>
-                <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Mobile Number</p>
-                <p className="font-semibold text-slate-200 mt-0.5">{coupon.mobile}</p>
+                <p className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Mobile Number</p>
+                <p className="font-semibold text-slate-800 mt-0.5">{coupon.mobile}</p>
               </div>
             </div>
 
-            <div className="flex items-center space-x-3 bg-slate-950/50 p-3 rounded-xl border border-slate-800/40">
-              <svg className="h-3.5 w-3.5 text-slate-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <div className="flex items-center space-x-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+              <svg className="h-3.5 w-3.5 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
                 <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                 <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
               </svg>
               <div>
-                <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Instagram Username</p>
-                <p className="font-semibold text-slate-200 mt-0.5">
+                <p className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Instagram Username</p>
+                <p className="font-semibold text-slate-800 mt-0.5">
                   {coupon.instagramUsername ? `@${coupon.instagramUsername}` : "N/A"}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center space-x-3 bg-slate-950/50 p-3 rounded-xl border border-slate-800/40">
-              <Gift size={14} className="text-slate-500 shrink-0" />
+            <div className="flex items-center space-x-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+              <Gift size={14} className="text-slate-400 shrink-0" />
               <div>
-                <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Winning Reward</p>
-                <p className="font-semibold text-amber-400 mt-0.5">{coupon.rewardName}</p>
+                <p className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Winning Reward</p>
+                <p className="font-semibold text-amber-600 mt-0.5">{coupon.rewardName}</p>
               </div>
             </div>
 
-            <div className="flex items-center space-x-3 bg-slate-950/50 p-3 rounded-xl border border-slate-800/40">
-              <Calendar size={14} className="text-slate-500 shrink-0" />
+            <div className="flex items-center space-x-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+              <Calendar size={14} className="text-slate-400 shrink-0" />
               <div>
-                <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Valid Till Date</p>
-                <p className="font-semibold text-slate-200 mt-0.5">
-                  {coupon.expiresAt ? coupon.expiresAt.toDate().toLocaleDateString() : ""}
+                <p className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Valid Till Date</p>
+                <p className="font-semibold text-slate-800 mt-0.5">
+                  {coupon.expiresAt ? new Date(coupon.expiresAt).toLocaleDateString() : ""}
                 </p>
               </div>
             </div>
@@ -287,7 +287,7 @@ function VerificationForm() {
             <button
               onClick={handleRedeem}
               disabled={updating}
-              className="w-full flex items-center justify-center py-3 bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white font-bold tracking-wider rounded-xl transition duration-150 text-xs uppercase select-none cursor-pointer"
+              className="w-full flex items-center justify-center py-3 bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white font-bold tracking-wider rounded-xl transition duration-150 text-xs uppercase select-none cursor-pointer shadow-sm"
             >
               {updating ? (
                 <>
@@ -306,7 +306,7 @@ function VerificationForm() {
           {status !== "unused" && (
             <button
               disabled
-              className="w-full flex items-center justify-center py-3 bg-slate-800 text-slate-500 font-bold tracking-wider rounded-xl text-xs uppercase select-none"
+              className="w-full flex items-center justify-center py-3 bg-slate-100 text-slate-400 font-bold tracking-wider rounded-xl text-xs uppercase select-none border border-slate-200"
             >
               <Lock size={14} className="mr-1.5" />
               Redemption Locked
@@ -323,10 +323,10 @@ export default function AdminVerifyPage() {
     <div className="space-y-8 max-w-7xl mx-auto">
       {/* Title */}
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold font-serif text-white tracking-wide">
+        <h1 className="text-2xl md:text-3xl font-bold font-serif text-slate-800 tracking-wide">
           Verify Reward Coupon
         </h1>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-slate-500">
           Enter a voucher code manually or scan the customer's ticket QR code.
         </p>
       </div>

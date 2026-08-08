@@ -50,21 +50,22 @@ export default function AdminRewardsPage() {
   const fetchRewards = async () => {
     setLoading(true);
     try {
-      const querySnapshot = await getDocs(collection(db, "rewards"));
-      const list: Reward[] = [];
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        list.push({
-          rewardId: doc.id,
-          rewardName: data.rewardName,
-          description: data.description || "",
-          probability: Number(data.probability) || 0,
-          active: data.active ?? true,
-          validityDays: Number(data.validityDays) || 7,
-          usageLimit: Number(data.usageLimit) || 0,
-          usedCount: Number(data.usedCount) || 0,
-        });
-      });
+      const response = await fetch("/api/admin/data");
+      if (!response.ok) {
+        throw new Error("Failed to fetch rewards data");
+      }
+      const apiData = await response.json();
+      const rawRewards: any[] = apiData.rewards || [];
+      const list: Reward[] = rawRewards.map((data) => ({
+        rewardId: data.id,
+        rewardName: data.rewardName,
+        description: data.description || "",
+        probability: Number(data.probability) || 0,
+        active: data.active ?? true,
+        validityDays: Number(data.validityDays) || 7,
+        usageLimit: Number(data.usageLimit) || 0,
+        usedCount: Number(data.usedCount) || 0,
+      }));
       // Sort rewards alphabetically
       list.sort((a, b) => a.rewardName.localeCompare(b.rewardName));
       setRewards(list);
@@ -107,10 +108,20 @@ export default function AdminRewardsPage() {
 
   const handleToggleActive = async (reward: Reward) => {
     try {
-      const rewardRef = doc(db, "rewards", reward.rewardId);
-      await updateDoc(rewardRef, {
-        active: !reward.active,
+      const response = await fetch("/api/admin/rewards", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          rewardId: reward.rewardId,
+          rewardName: reward.rewardName,
+          active: !reward.active,
+        }),
       });
+
+      if (!response.ok) {
+        throw new Error("Failed to toggle reward status");
+      }
+
       await fetchRewards();
     } catch (err) {
       console.error("Toggle active error:", err);
@@ -145,11 +156,19 @@ export default function AdminRewardsPage() {
       active,
       validityDays: Number(validityDays) || 7,
       usageLimit: Number(usageLimit) || 0,
-      usedCount: usedCount || 0,
     };
 
     try {
-      await setDoc(doc(db, "rewards", finalId), rewardData);
+      const response = await fetch("/api/admin/rewards", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(rewardData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save reward");
+      }
+
       await fetchRewards();
       setShowFormModal(false);
     } catch (err) {
@@ -166,7 +185,14 @@ export default function AdminRewardsPage() {
     }
 
     try {
-      await deleteDoc(doc(db, "rewards", id));
+      const response = await fetch(`/api/admin/rewards?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete reward");
+      }
+
       await fetchRewards();
     } catch (err) {
       console.error("Delete reward error:", err);
@@ -180,20 +206,20 @@ export default function AdminRewardsPage() {
     .reduce((sum, r) => sum + r.probability, 0);
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
+    <div className="space-y-8 max-w-7xl mx-auto text-slate-850">
       {/* Title block */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold font-serif text-white tracking-wide">
+          <h1 className="text-2xl md:text-3xl font-bold font-serif text-slate-800 tracking-wide">
             Manage Rewards
           </h1>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-slate-500">
             Define active wheel segments, probabilities, and limits.
           </p>
         </div>
         <button
           onClick={openAddModal}
-          className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2.5 rounded-xl transition duration-150 flex items-center gap-1.5 text-xs uppercase tracking-wider self-start select-none cursor-pointer"
+          className="bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-2.5 rounded-xl transition duration-150 flex items-center gap-1.5 text-xs uppercase tracking-wider self-start select-none cursor-pointer shadow-sm"
         >
           <Plus size={16} />
           <span>Add Reward</span>
@@ -201,12 +227,12 @@ export default function AdminRewardsPage() {
       </div>
 
       {/* CALIBRATION STATS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-900 border border-slate-800/80 rounded-2xl p-5">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm text-slate-700">
         <div className="flex items-start space-x-3.5">
-          <Percent className="h-5 w-5 text-amber-500 mt-1 shrink-0" />
+          <Percent className="h-5 w-5 text-amber-600 mt-1 shrink-0" />
           <div>
             <h4 className="text-xs text-slate-400 font-bold uppercase tracking-wider">Calibration Weight</h4>
-            <p className="text-xl font-bold text-white font-mono mt-1">
+            <p className="text-xl font-bold text-slate-800 font-mono mt-1">
               {totalProbability.toFixed(1)}%
             </p>
             <p className="text-[10px] text-slate-500 mt-1 leading-normal">
@@ -215,11 +241,11 @@ export default function AdminRewardsPage() {
           </div>
         </div>
 
-        <div className="flex items-start space-x-3.5 border-t md:border-t-0 md:border-l border-slate-800/80 pt-4 md:pt-0 md:pl-5">
-          <Gift className="h-5 w-5 text-green-500 mt-1 shrink-0" />
+        <div className="flex items-start space-x-3.5 border-t md:border-t-0 md:border-l border-slate-200 pt-4 md:pt-0 md:pl-5">
+          <Gift className="h-5 w-5 text-green-600 mt-1 shrink-0" />
           <div>
             <h4 className="text-xs text-slate-400 font-bold uppercase tracking-wider">Wheel Segments</h4>
-            <p className="text-xl font-bold text-white font-mono mt-1">
+            <p className="text-xl font-bold text-slate-800 font-mono mt-1">
               {rewards.filter((r) => r.active).length} Active / {rewards.length} Total
             </p>
             <p className="text-[10px] text-slate-500 mt-1 leading-normal">
@@ -228,11 +254,11 @@ export default function AdminRewardsPage() {
           </div>
         </div>
 
-        <div className="flex items-start space-x-3.5 border-t md:border-t-0 md:border-l border-slate-800/80 pt-4 md:pt-0 md:pl-5">
-          <Info className="h-5 w-5 text-blue-500 mt-1 shrink-0" />
+        <div className="flex items-start space-x-3.5 border-t md:border-t-0 md:border-l border-slate-200 pt-4 md:pt-0 md:pl-5">
+          <Info className="h-5 w-5 text-blue-650 mt-1 shrink-0" />
           <div>
             <h4 className="text-xs text-slate-400 font-bold uppercase tracking-wider">Auto-Exclusion</h4>
-            <p className="text-xs text-slate-300 font-medium mt-2 leading-relaxed">
+            <p className="text-xs text-slate-600 font-medium mt-2 leading-relaxed">
               Rewards that reach their usage limit or are set to inactive are automatically omitted from the wheel selection flow.
             </p>
           </div>
@@ -240,9 +266,9 @@ export default function AdminRewardsPage() {
       </div>
 
       {/* REWARDS DIRECTORY */}
-      <div className="bg-slate-900 border border-slate-800/60 rounded-2xl overflow-hidden shadow-xl">
+      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
         {loading ? (
-          <div className="flex flex-col justify-center items-center py-20 text-slate-500">
+          <div className="flex flex-col justify-center items-center py-20 text-slate-400">
             <Loader2 className="h-8 w-8 text-amber-500 animate-spin mb-3" />
             <p className="text-xs">Loading rewards...</p>
           </div>
@@ -254,7 +280,7 @@ export default function AdminRewardsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-800/80 bg-slate-950 text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+                <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 text-[10px] font-bold uppercase tracking-wider">
                   <th className="px-6 py-4">Reward Name</th>
                   <th className="px-6 py-4">Relative Weight</th>
                   <th className="px-6 py-4">Validity Period</th>
@@ -263,38 +289,38 @@ export default function AdminRewardsPage() {
                   <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
+              <tbody className="divide-y divide-slate-200 text-xs text-slate-700">
                 {rewards.map((reward) => {
                   const limitReached = reward.usedCount >= reward.usageLimit;
                   return (
-                    <tr key={reward.rewardId} className="hover:bg-slate-950/40 transition duration-150">
+                    <tr key={reward.rewardId} className="hover:bg-slate-50 transition duration-150">
                       {/* Name & desc */}
                       <td className="px-6 py-4">
-                        <div className="font-bold text-slate-200">{reward.rewardName}</div>
-                        <div className="text-[10px] text-slate-500 mt-1 max-w-sm truncate" title={reward.description}>
+                        <div className="font-bold text-slate-800">{reward.rewardName}</div>
+                        <div className="text-[10px] text-slate-400 mt-1 max-w-sm truncate" title={reward.description}>
                           {reward.description || "No description provided."}
                         </div>
                       </td>
 
                       {/* Probability */}
-                      <td className="px-6 py-4 font-semibold font-mono text-slate-200">
+                      <td className="px-6 py-4 font-semibold font-mono text-slate-800">
                         {reward.probability}%
                       </td>
 
                       {/* Validity */}
-                      <td className="px-6 py-4 text-slate-400 font-mono">
+                      <td className="px-6 py-4 text-slate-500 font-mono">
                         {reward.validityDays} Days
                       </td>
 
                       {/* Usage Limits */}
                       <td className="px-6 py-4">
                         <div className="font-mono">
-                          <span className={limitReached ? "text-rose-400 font-semibold" : "text-green-400"}>
+                          <span className={limitReached ? "text-rose-600 font-semibold" : "text-green-600 font-semibold"}>
                             {reward.usedCount}
                           </span>{" "}
                           / {reward.usageLimit}
                         </div>
-                        <div className="w-24 h-1 bg-slate-850 rounded-full overflow-hidden mt-1.5">
+                        <div className="w-24 h-1 bg-slate-100 rounded-full overflow-hidden mt-1.5">
                           <div
                             className={`h-full ${limitReached ? "bg-rose-500" : "bg-green-500"}`}
                             style={{
@@ -311,17 +337,17 @@ export default function AdminRewardsPage() {
                           className="flex items-center select-none cursor-pointer focus:outline-none"
                         >
                           {reward.active && !limitReached ? (
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-green-950/50 border border-green-500/30 text-green-400">
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-green-50 border border-green-200 text-green-700">
                               <CheckCircle size={10} className="mr-1 shrink-0" />
                               Active
                             </span>
                           ) : limitReached ? (
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-950/50 border border-rose-500/30 text-rose-400">
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-50 border border-rose-200 text-rose-700">
                               <XCircle size={10} className="mr-1 shrink-0" />
                               Limit Hit
                             </span>
                           ) : (
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-950 border border-slate-800 text-slate-500">
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 border border-slate-200 text-slate-400">
                               <XCircle size={10} className="mr-1 shrink-0" />
                               Disabled
                             </span>
@@ -334,14 +360,14 @@ export default function AdminRewardsPage() {
                         <div className="flex items-center justify-end space-x-2">
                           <button
                             onClick={() => openEditModal(reward)}
-                            className="p-1.5 text-slate-500 hover:text-white hover:bg-slate-950 border border-transparent hover:border-slate-800 rounded-lg transition select-none cursor-pointer"
+                            className="p-1.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 border border-transparent hover:border-slate-200 rounded-lg transition select-none cursor-pointer"
                             title="Edit Reward"
                           >
                             <Edit2 size={13} />
                           </button>
                           <button
                             onClick={() => handleDelete(reward.rewardId)}
-                            className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-950/20 border border-transparent hover:border-rose-900/20 rounded-lg transition select-none cursor-pointer"
+                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 rounded-lg transition select-none cursor-pointer"
                             title="Delete Reward"
                           >
                             <Trash2 size={13} />
@@ -359,9 +385,9 @@ export default function AdminRewardsPage() {
 
       {/* CREATE/EDIT FORM MODAL */}
       {showFormModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex justify-center items-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 w-full max-w-md space-y-6 relative animate-fade-in">
-            <div className="flex items-center space-x-2 text-amber-500">
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex justify-center items-center p-4">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-2xl p-6 w-full max-w-md space-y-6 relative animate-fade-in text-slate-800">
+            <div className="flex items-center space-x-2 text-amber-600">
               <Sparkles size={18} />
               <h3 className="text-lg font-bold font-serif">
                 {isEditing ? "Modify Reward" : "Add New Reward"}
@@ -371,35 +397,35 @@ export default function AdminRewardsPage() {
             <form onSubmit={handleSubmit} className="space-y-4 text-xs">
               {/* Reward Name */}
               <div className="space-y-1.5">
-                <label className="text-slate-400 font-bold uppercase tracking-wider">Reward Name</label>
+                <label className="text-slate-500 font-bold uppercase tracking-wider">Reward Name</label>
                 <input
                   type="text"
                   placeholder="e.g., Free Welcome Drink"
                   value={rewardName}
                   onChange={(e) => setRewardName(e.target.value)}
                   required
-                  className="block w-full px-3 py-2.5 bg-slate-950 border border-slate-800 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-white outline-none transition"
+                  className="block w-full px-3 py-2.5 bg-slate-50 border border-slate-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-slate-800 outline-none transition"
                 />
               </div>
 
               {/* Description */}
               <div className="space-y-1.5">
-                <label className="text-slate-400 font-bold uppercase tracking-wider">Description</label>
+                <label className="text-slate-500 font-bold uppercase tracking-wider">Description</label>
                 <textarea
                   placeholder="Details shown to customer and staff"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={2}
-                  className="block w-full px-3 py-2.5 bg-slate-950 border border-slate-800 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-white outline-none resize-none transition"
+                  className="block w-full px-3 py-2.5 bg-slate-50 border border-slate-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-slate-800 outline-none resize-none transition"
                 />
               </div>
 
               <div className="grid grid-cols-3 gap-3">
                 {/* Probability */}
                 <div className="space-y-1.5">
-                  <label className="text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                  <label className="text-slate-500 font-bold uppercase tracking-wider flex items-center gap-1">
                     <span>Weight</span>
-                    <Percent size={10} className="text-amber-500" />
+                    <Percent size={10} className="text-amber-600" />
                   </label>
                   <input
                     type="number"
@@ -410,15 +436,15 @@ export default function AdminRewardsPage() {
                     value={probability}
                     onChange={(e) => setProbability(Number(e.target.value))}
                     required
-                    className="block w-full px-3 py-2.5 bg-slate-950 border border-slate-800 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-white outline-none font-mono transition"
+                    className="block w-full px-3 py-2.5 bg-slate-50 border border-slate-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-slate-800 outline-none font-mono transition"
                   />
                 </div>
 
                 {/* Validity */}
                 <div className="space-y-1.5">
-                  <label className="text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                  <label className="text-slate-500 font-bold uppercase tracking-wider flex items-center gap-1">
                     <span>Validity</span>
-                    <Clock size={10} className="text-green-500" />
+                    <Clock size={10} className="text-green-600" />
                   </label>
                   <input
                     type="number"
@@ -427,13 +453,13 @@ export default function AdminRewardsPage() {
                     value={validityDays}
                     onChange={(e) => setValidityDays(Number(e.target.value))}
                     required
-                    className="block w-full px-3 py-2.5 bg-slate-950 border border-slate-800 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-white outline-none font-mono transition"
+                    className="block w-full px-3 py-2.5 bg-slate-50 border border-slate-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-slate-800 outline-none font-mono transition"
                   />
                 </div>
 
                 {/* Limit */}
                 <div className="space-y-1.5">
-                  <label className="text-slate-400 font-bold uppercase tracking-wider">Limit</label>
+                  <label className="text-slate-500 font-bold uppercase tracking-wider">Limit</label>
                   <input
                     type="number"
                     min="1"
@@ -441,7 +467,7 @@ export default function AdminRewardsPage() {
                     value={usageLimit}
                     onChange={(e) => setUsageLimit(Number(e.target.value))}
                     required
-                    className="block w-full px-3 py-2.5 bg-slate-950 border border-slate-800 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-white outline-none font-mono transition"
+                    className="block w-full px-3 py-2.5 bg-slate-50 border border-slate-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-slate-800 outline-none font-mono transition"
                   />
                 </div>
               </div>
@@ -452,9 +478,9 @@ export default function AdminRewardsPage() {
                   type="checkbox"
                   checked={active}
                   onChange={(e) => setActive(e.target.checked)}
-                  className="rounded border-slate-800 text-amber-500 focus:ring-amber-500 bg-slate-950 focus:ring-offset-slate-900"
+                  className="rounded border-slate-350 text-amber-500 focus:ring-amber-500 bg-slate-50 focus:ring-offset-white"
                 />
-                <span className="text-slate-300 font-bold uppercase tracking-wider">Reward Campaign Active</span>
+                <span className="text-slate-700 font-bold uppercase tracking-wider">Reward Campaign Active</span>
               </label>
 
               {/* Actions */}
@@ -462,7 +488,7 @@ export default function AdminRewardsPage() {
                 <button
                   type="submit"
                   disabled={submitLoading}
-                  className="flex-1 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 font-bold py-2 rounded-xl transition uppercase tracking-wider text-[11px] select-none cursor-pointer flex items-center justify-center gap-1.5"
+                  className="flex-1 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white font-bold py-2 rounded-xl transition uppercase tracking-wider text-[11px] select-none cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
                 >
                   {submitLoading ? <Loader2 size={12} className="animate-spin" /> : null}
                   <span>Save Config</span>
@@ -471,7 +497,7 @@ export default function AdminRewardsPage() {
                   type="button"
                   disabled={submitLoading}
                   onClick={() => setShowFormModal(false)}
-                  className="flex-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-white font-bold py-2 rounded-xl transition uppercase tracking-wider text-[11px] select-none cursor-pointer"
+                  className="flex-1 bg-slate-200 hover:bg-slate-300 disabled:opacity-50 text-slate-800 font-bold py-2 rounded-xl transition uppercase tracking-wider text-[11px] select-none cursor-pointer"
                 >
                   Cancel
                 </button>

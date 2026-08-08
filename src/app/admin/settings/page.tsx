@@ -46,29 +46,24 @@ export default function AdminSettingsPage() {
 
     const fetchSettings = async () => {
       try {
-        const docRef = doc(db, "settings", "campaign");
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setActive(data.campaignActive ?? true);
-
-          // Convert firestore timestamp or date string to YYYY-MM-DDTHH:MM format for input type="datetime-local"
-          if (data.spinStartDate) {
-            const start = data.spinStartDate.toDate
-              ? data.spinStartDate.toDate()
-              : new Date(data.spinStartDate);
-            setStartDate(start.toISOString().slice(0, 16));
-          }
-          if (data.spinEndDate) {
-            const end = data.spinEndDate.toDate
-              ? data.spinEndDate.toDate()
-              : new Date(data.spinEndDate);
-            setEndDate(end.toISOString().slice(0, 16));
-          }
-
-          setEligibility(data.spinEligibility || "one_per_mobile");
+        const response = await fetch("/api/admin/settings");
+        if (!response.ok) {
+          throw new Error("Failed to fetch settings");
         }
+        const data = await response.json();
+        setActive(data.campaignActive ?? true);
+
+        // Convert firestore timestamp or date string to YYYY-MM-DDTHH:MM format for input type="datetime-local"
+        if (data.spinStartDate) {
+          const start = new Date(data.spinStartDate);
+          setStartDate(start.toISOString().slice(0, 16));
+        }
+        if (data.spinEndDate) {
+          const end = new Date(data.spinEndDate);
+          setEndDate(end.toISOString().slice(0, 16));
+        }
+
+        setEligibility(data.spinEligibility || "one_per_mobile");
       } catch (err) {
         console.error("Error loading settings:", err);
       } finally {
@@ -94,7 +89,16 @@ export default function AdminSettingsPage() {
         spinEligibility: eligibility,
       };
 
-      await setDoc(doc(db, "settings", "campaign"), settingsData);
+      const response = await fetch("/api/admin/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(settingsData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save settings");
+      }
+
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {
@@ -116,107 +120,19 @@ export default function AdminSettingsPage() {
 
     setBootstrapping(true);
     try {
-      // 1. Seed Rewards
-      const defaultRewards = [
-        {
-          rewardId: "food-10",
-          rewardName: "10% OFF on Food Bill",
-          description: "Get 10% discount on food orders at our restaurant.",
-          probability: 25.0,
-          active: true,
-          validityDays: 7,
-          usageLimit: 1000,
-          usedCount: 0,
-        },
-        {
-          rewardId: "welcome-drink",
-          rewardName: "Welcome Drink FREE",
-          description: "Enjoy a free welcome mocktail on your visit.",
-          probability: 20.0,
-          active: true,
-          validityDays: 3,
-          usageLimit: 2000,
-          usedCount: 0,
-        },
-        {
-          rewardId: "starter-free",
-          rewardName: "Starter FREE",
-          description: "Get any starter of your choice free with your food order.",
-          probability: 15.0,
-          active: true,
-          validityDays: 5,
-          usageLimit: 500,
-          usedCount: 0,
-        },
-        {
-          rewardId: "dessert-free",
-          rewardName: "Dessert FREE",
-          description: "End your meal on a sweet note with a free dessert.",
-          probability: 15.0,
-          active: true,
-          validityDays: 5,
-          usageLimit: 500,
-          usedCount: 0,
-        },
-        {
-          rewardId: "breakfast-2",
-          rewardName: "Breakfast for 2 FREE",
-          description: "Indulge in a complimentary buffet breakfast for 2 guests.",
-          probability: 10.0,
-          active: true,
-          validityDays: 14,
-          usageLimit: 100,
-          usedCount: 0,
-        },
-        {
-          rewardId: "room-15",
-          rewardName: "15% OFF on Room Booking",
-          description: "Get a 15% discount on room bookings made directly.",
-          probability: 7.0,
-          active: true,
-          validityDays: 30,
-          usageLimit: 200,
-          usedCount: 0,
-        },
-        {
-          rewardId: "room-500",
-          rewardName: "₹500 OFF on Room Booking",
-          description: "Flat ₹500 discount on your room bill.",
-          probability: 5.0,
-          active: true,
-          validityDays: 30,
-          usageLimit: 300,
-          usedCount: 0,
-        },
-        {
-          rewardId: "room-upgrade",
-          rewardName: "Room Upgrade FREE",
-          description: "Complimentary upgrade to the next room tier.",
-          probability: 3.0,
-          active: true,
-          validityDays: 7,
-          usageLimit: 50,
-          usedCount: 0,
-        },
-      ];
+      const response = await fetch("/api/admin/settings", {
+        method: "PUT",
+      });
 
-      for (const r of defaultRewards) {
-        await setDoc(doc(db, "rewards", r.rewardId), r);
+      if (!response.ok) {
+        throw new Error("Failed to bootstrap database");
       }
 
-      // 2. Seed Settings
+      // Update local state variables
       const start = new Date();
       const end = new Date();
       end.setFullYear(start.getFullYear() + 1);
 
-      await setDoc(doc(db, "settings", "campaign"), {
-        campaignActive: true,
-        spinStartDate: start,
-        spinEndDate: end,
-        spinEligibility: "one_per_mobile",
-      });
-
-      // Update state
       setActive(true);
       setStartDate(start.toISOString().slice(0, 16));
       setEndDate(end.toISOString().slice(0, 16));
@@ -324,38 +240,38 @@ export default function AdminSettingsPage() {
   }
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
+    <div className="space-y-8 max-w-7xl mx-auto text-slate-850">
       {/* Title block */}
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold font-serif text-white tracking-wide">
+        <h1 className="text-2xl md:text-3xl font-bold font-serif text-slate-800 tracking-wide">
           Campaign Settings
         </h1>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-slate-500">
           Configure rule conditions and manage print-ready QR codes.
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* SETTINGS CONFIGURATION FORM */}
-        <div className="lg:col-span-2 bg-slate-900 border border-slate-800/60 rounded-2xl p-6 space-y-6">
-          <div className="flex items-center space-x-2 text-amber-500 border-b border-slate-800/80 pb-4">
+        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 space-y-6 shadow-sm">
+          <div className="flex items-center space-x-2 text-amber-600 border-b border-slate-100 pb-4">
             <Settings size={18} />
-            <h2 className="text-base font-bold text-white font-serif">Rules & Validity</h2>
+            <h2 className="text-base font-bold text-slate-800 font-serif">Rules & Validity</h2>
           </div>
 
           {saveSuccess && (
-            <div className="bg-green-950/40 border border-green-500/30 rounded-xl p-3 flex items-center space-x-2 text-green-300 text-xs animate-fade-in">
-              <CheckCircle size={14} className="text-green-500 shrink-0" />
+            <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center space-x-2 text-green-800 text-xs animate-fade-in">
+              <CheckCircle size={14} className="text-green-600 shrink-0" />
               <span className="font-semibold">Settings successfully updated!</span>
             </div>
           )}
 
           <form onSubmit={handleSave} className="space-y-5 text-xs">
             {/* Active Switch */}
-            <div className="flex items-center justify-between bg-slate-950/30 border border-slate-800/50 p-4 rounded-xl">
+            <div className="flex items-center justify-between bg-slate-50 border border-slate-200 p-4 rounded-xl">
               <div>
-                <h4 className="text-slate-200 font-bold uppercase tracking-wider mb-0.5">Campaign Status</h4>
-                <p className="text-[10px] text-slate-500">Instantly enable or disable the spin wheel page.</p>
+                <h4 className="text-slate-800 font-bold uppercase tracking-wider mb-0.5">Campaign Status</h4>
+                <p className="text-[10px] text-slate-450">Instantly enable or disable the spin wheel page.</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer select-none">
                 <input
@@ -364,53 +280,53 @@ export default function AdminSettingsPage() {
                   onChange={(e) => setActive(e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
               </label>
             </div>
 
             {/* Date validation picker */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1">
-                  <Calendar size={12} className="text-amber-500" />
+                <label className="text-slate-500 font-bold uppercase tracking-wider flex items-center gap-1">
+                  <Calendar size={12} className="text-amber-600" />
                   <span>Start Date & Time</span>
                 </label>
                 <input
                   type="datetime-local"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="block w-full px-3 py-2.5 bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl text-white outline-none font-mono"
+                  className="block w-full px-3 py-2.5 bg-slate-50 border border-slate-200 focus:border-amber-500 rounded-xl text-slate-800 outline-none font-mono"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1">
-                  <Calendar size={12} className="text-rose-500" />
+                <label className="text-slate-500 font-bold uppercase tracking-wider flex items-center gap-1">
+                  <Calendar size={12} className="text-rose-600" />
                   <span>End Date & Time</span>
                 </label>
                 <input
                   type="datetime-local"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="block w-full px-3 py-2.5 bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl text-white outline-none font-mono"
+                  className="block w-full px-3 py-2.5 bg-slate-50 border border-slate-200 focus:border-amber-500 rounded-xl text-slate-800 outline-none font-mono"
                 />
               </div>
             </div>
 
             {/* Cooldown/Participation rules */}
             <div className="space-y-1.5">
-              <label className="text-slate-400 font-bold uppercase tracking-wider">
+              <label className="text-slate-500 font-bold uppercase tracking-wider">
                 Participation Limit
               </label>
               <select
                 value={eligibility}
                 onChange={(e) => setEligibility(e.target.value as any)}
-                className="block w-full px-3 py-2.5 bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl text-slate-300 outline-none cursor-pointer"
+                className="block w-full px-3 py-2.5 bg-slate-50 border border-slate-200 focus:border-amber-500 rounded-xl text-slate-700 outline-none cursor-pointer"
               >
                 <option value="one_per_mobile">Strictly One Spin Per Mobile Number</option>
                 <option value="unlimited">Unlimited Spins (Mainly for Testing)</option>
               </select>
-              <p className="text-[10px] text-slate-500 leading-relaxed mt-1.5">
+              <p className="text-[10px] text-slate-450 leading-relaxed mt-1.5">
                 Checking 'Strictly One Spin' verifies if the client mobile number has already spun in the Firestore collection prior to allowing a spin animation.
               </p>
             </div>
@@ -419,7 +335,7 @@ export default function AdminSettingsPage() {
             <button
               type="submit"
               disabled={saving}
-              className="w-max flex items-center justify-center px-6 py-2.5 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 font-bold tracking-wider rounded-xl transition duration-150 uppercase text-[10px] select-none cursor-pointer"
+              className="w-max flex items-center justify-center px-6 py-2.5 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white font-bold tracking-wider rounded-xl transition duration-150 uppercase text-[10px] select-none cursor-pointer shadow-sm"
             >
               {saving ? (
                 <>
@@ -436,22 +352,22 @@ export default function AdminSettingsPage() {
           </form>
 
           {/* BOOTSTRAP DATABASE PANEL */}
-          <div className="border-t border-slate-800/80 pt-6 space-y-4">
-            <div className="flex items-center space-x-2 text-rose-400">
+          <div className="border-t border-slate-100 pt-6 space-y-4">
+            <div className="flex items-center space-x-2 text-rose-600">
               <Database size={16} />
               <h3 className="text-sm font-bold uppercase tracking-wider font-serif">Setup Helper & Maintenance</h3>
             </div>
-            <div className="bg-rose-950/20 border border-rose-900/30 rounded-xl p-4 flex items-start space-x-3 text-xs">
-              <AlertTriangle className="h-5 w-5 text-rose-400 shrink-0 mt-0.5" />
+            <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 flex items-start space-x-3 text-xs">
+              <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
               <div className="space-y-3">
-                <p className="text-rose-200 leading-normal font-medium">
+                <p className="text-rose-750 leading-normal font-medium">
                   If the Firestore collection is empty or you need to re-seed default rewards (10% Food Discount, Starter, Room Upgrades, etc.), click below to seed default settings.
                 </p>
                 <button
                   type="button"
                   disabled={bootstrapping}
                   onClick={handleBootstrap}
-                  className="bg-rose-950/50 hover:bg-rose-900/40 text-rose-200 border border-rose-700/40 font-bold px-4 py-2 rounded-xl transition uppercase text-[10px] tracking-wider select-none cursor-pointer flex items-center gap-1.5"
+                  className="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold px-4 py-2 rounded-xl transition uppercase text-[10px] tracking-wider select-none cursor-pointer flex items-center gap-1.5"
                 >
                   {bootstrapping ? (
                     <Loader2 size={12} className="animate-spin" />
@@ -466,18 +382,18 @@ export default function AdminSettingsPage() {
         </div>
 
         {/* QR CODE POSTER EXPORT PANEL */}
-        <div className="bg-slate-900 border border-slate-800/60 rounded-2xl p-6 flex flex-col justify-between space-y-6">
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col justify-between space-y-6 shadow-sm">
           <div className="space-y-4">
-            <div className="flex items-center space-x-2 text-amber-500 border-b border-slate-800/80 pb-4">
+            <div className="flex items-center space-x-2 text-amber-600 border-b border-slate-100 pb-4">
               <QrCode size={18} />
-              <h2 className="text-base font-bold text-white font-serif">Print QR Poster</h2>
+              <h2 className="text-base font-bold text-slate-800 font-serif">Print QR Poster</h2>
             </div>
-            <p className="text-xs text-slate-400 leading-normal">
+            <p className="text-xs text-slate-450 leading-normal">
               Below is the QR code pointing directly to your customer spin page. Download the print-ready poster to place at hotel tables, counters, or lobbies.
             </p>
 
             {/* Canvas QR Code (Hidden/Rendered for reference) */}
-            <div className="bg-white p-4 rounded-2xl inline-block shadow-md mx-auto relative group">
+            <div className="bg-white p-4 rounded-2xl inline-block border border-slate-150 shadow-sm mx-auto relative group">
               <QRCodeCanvas
                 id="campaign-qr-canvas"
                 value={spinPageUrl}
@@ -490,7 +406,7 @@ export default function AdminSettingsPage() {
             {/* URL label */}
             <div className="space-y-1">
               <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Destination Link</span>
-              <p className="text-[11px] font-mono text-amber-500 truncate max-w-full bg-slate-950/50 p-2 rounded-lg border border-slate-800/60" title={spinPageUrl}>
+              <p className="text-[11px] font-mono text-amber-600 truncate max-w-full bg-slate-50 p-2 rounded-lg border border-slate-200" title={spinPageUrl}>
                 {spinPageUrl}
               </p>
             </div>
@@ -498,7 +414,7 @@ export default function AdminSettingsPage() {
 
           <button
             onClick={downloadQRCodeImage}
-            className="w-full flex items-center justify-center py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold tracking-wider rounded-xl transition duration-150 text-xs uppercase select-none cursor-pointer gap-1.5"
+            className="w-full flex items-center justify-center py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold tracking-wider rounded-xl transition duration-150 text-xs uppercase select-none cursor-pointer gap-1.5 shadow-sm"
           >
             <Download size={14} />
             Download Print Poster

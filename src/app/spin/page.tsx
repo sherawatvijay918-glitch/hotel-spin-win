@@ -255,10 +255,12 @@ export default function SpinPage() {
       <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-md z-0"></div>
 
       {/* Header Branding */}
-      <header className="text-center z-10 space-y-1">
-        <h1 className="text-amber-500 font-serif text-3xl font-light tracking-[0.25em] uppercase">
-          7 BLUE HILLS
-        </h1>
+      <header className="text-center z-10 flex flex-col items-center justify-center space-y-2">
+        <img
+          src="/image/logo.png"
+          alt="7 Blue Hills Logo"
+          className="h-16 w-auto object-contain hover:scale-105 transition duration-300"
+        />
         <p className="text-slate-400 text-[10px] tracking-[0.4em] uppercase font-bold">
           Hotel & Restaurant
         </p>
