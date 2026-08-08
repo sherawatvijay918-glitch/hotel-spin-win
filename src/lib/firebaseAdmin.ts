@@ -10,7 +10,12 @@ const getFirebaseAdmin = () => {
 
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
   let privateKey = process.env.FIREBASE_PRIVATE_KEY;
-  const projectId = process.env.FIREBASE_PROJECT_ID;
+
+  // Admin SDK ke liye FIREBASE_PROJECT_ID use karo.
+  // Fallback ke liye NEXT_PUBLIC_FIREBASE_PROJECT_ID bhi rakha hai.
+  const projectId =
+    process.env.FIREBASE_PROJECT_ID ||
+    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 
   if (privateKey) {
     privateKey = privateKey
@@ -18,44 +23,23 @@ const getFirebaseAdmin = () => {
       .replace(/\\n/g, "\n");
   }
 
-  const isMock =
-    !clientEmail ||
-    !privateKey ||
-    privateKey.includes("MOCK") ||
-    !projectId ||
-    projectId.includes("mock");
-
-  if (isMock) {
-    console.warn(
-      "Firebase Admin SDK: Initializing with mock/local credentials."
+  if (!clientEmail || !privateKey || !projectId) {
+    throw new Error(
+      "Firebase Admin credentials are missing. Please check FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL and FIREBASE_PRIVATE_KEY."
     );
-
-    return initializeApp({
-      projectId: projectId || "mock-project-id",
-    });
   }
 
-  try {
-    return initializeApp({
-      credential: cert({
-        projectId,
-        clientEmail,
-        privateKey,
-      }),
-    });
-  } catch (error) {
-    console.error(
-      "Failed to initialize Firebase Admin with service cert:",
-      error
-    );
-
-    return initializeApp({
-      projectId: projectId || "mock-project-id",
-    });
-  }
+  return initializeApp({
+    credential: cert({
+      projectId,
+      clientEmail,
+      privateKey,
+    }),
+  });
 };
 
 const adminApp = getFirebaseAdmin();
+
 const adminDb = getFirestore(adminApp);
 
 export { adminApp, adminDb };
