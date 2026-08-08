@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { verifySessionToken } from "@/lib/adminAuth";
 import { adminDb } from "@/lib/firebaseAdmin";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("admin_session")?.value;
+    if (!verifySessionToken(token)) {
+      return NextResponse.json({ error: "Unauthorized access." }, { status: 401 });
+    }
     // 1. Fetch all spins sorted by createdAt desc
     const spinsSnapshot = await adminDb
       .collection("spins")

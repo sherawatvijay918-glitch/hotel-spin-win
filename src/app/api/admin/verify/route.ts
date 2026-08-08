@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { verifySessionToken } from "@/lib/adminAuth";
 import { adminDb } from "@/lib/firebaseAdmin";
 
 export async function GET(request: Request) {
   try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("admin_session")?.value;
+    if (!verifySessionToken(token)) {
+      return NextResponse.json({ error: "Unauthorized access." }, { status: 401 });
+    }
     const { searchParams } = new URL(request.url);
     const code = searchParams.get("code");
 

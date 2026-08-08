@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { generateSessionToken } from "@/lib/adminAuth";
 
 export async function POST(request: Request) {
   try {
@@ -10,18 +11,34 @@ export async function POST(request: Request) {
 
     const cleanEmail = email.trim().toLowerCase();
 
-    // Secure login validation for campaign administrators
+    // Validate credentials:
+    // Email: 7bluehillshotel@gmail.com
+    // Password: 7bluehills@@
     if (
-      (cleanEmail === "admin@7bluehills.com" || cleanEmail === "admin@spin.com") &&
-      password === "admin123"
+      (cleanEmail === "7bluehillshotel@gmail.com" || cleanEmail === "admin@spin.com") &&
+      password === "7bluehills@@"
     ) {
-      return NextResponse.json({
+      const user = {
+        email: cleanEmail,
+        uid: "server-auth-admin-uid",
+      };
+
+      const token = generateSessionToken(cleanEmail);
+      const response = NextResponse.json({
         success: true,
-        user: {
-          email: cleanEmail,
-          uid: "server-auth-admin-uid",
-        },
+        user,
       });
+
+      // Set HTTP-Only Cookie securely for session verification
+      response.cookies.set("admin_session", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 7 * 24 * 60 * 60, // 7 days
+        path: "/",
+        sameSite: "strict",
+      });
+
+      return response;
     }
 
     return NextResponse.json({ error: "Invalid email address or password." }, { status: 401 });

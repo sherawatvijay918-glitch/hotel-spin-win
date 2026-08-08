@@ -91,7 +91,7 @@ export default function AdminLoginPage() {
                 </div>
                 <input
                   type="email"
-                  placeholder="admin@7bluehills.com"
+                  placeholder="7bluehillshotel@gmail.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={submitting}

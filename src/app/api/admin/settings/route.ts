@@ -1,8 +1,16 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { verifySessionToken } from "@/lib/adminAuth";
 import { adminDb } from "@/lib/firebaseAdmin";
 
 export async function GET() {
   try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("admin_session")?.value;
+    if (!verifySessionToken(token)) {
+      return NextResponse.json({ error: "Unauthorized access." }, { status: 401 });
+    }
+
     const docSnap = await adminDb.collection("settings").doc("campaign").get();
     if (!docSnap.exists) {
       // return default settings structure
@@ -28,6 +36,12 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("admin_session")?.value;
+    if (!verifySessionToken(token)) {
+      return NextResponse.json({ error: "Unauthorized access." }, { status: 401 });
+    }
+
     const body = await request.json();
     const { campaignActive, spinStartDate, spinEndDate, spinEligibility } = body;
 
@@ -52,6 +66,12 @@ export async function POST(request: Request) {
 
 export async function PUT() {
   try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("admin_session")?.value;
+    if (!verifySessionToken(token)) {
+      return NextResponse.json({ error: "Unauthorized access." }, { status: 401 });
+    }
+
     // Bootstrap database settings & rewards
     const defaultRewards = [
       {
