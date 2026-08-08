@@ -155,14 +155,7 @@ export default function SpinWheel({
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
-    // Center text - "7BH" (luxury Outfit serif-like uppercase)
-    ctx.fillStyle = "#FFFFFF";
-    ctx.font = "bold 13px 'Outfit', sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.shadowColor = "rgba(0, 0, 0, 0.4)";
-    ctx.shadowBlur = 2;
-    ctx.fillText("7BH", center, center);
+    // Center text - 7BH removed as requested
     ctx.shadowBlur = 0;
   };
 

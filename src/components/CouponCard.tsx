@@ -151,8 +151,16 @@ export default function CouponCard({ coupon }: CouponCardProps) {
     // Terms and Conditions footer
     ctx.fillStyle = "#64748B";
     ctx.font = "italic 11px 'Inter', sans-serif";
-    ctx.fillText("Terms: Valid for one-time use only. Present coupon code before billing.", 300, 720);
-    ctx.fillText("Cannot be redeemed for cash or combined with other promotions.", 300, 740);
+    if (coupon.rewardName.includes("10%")) {
+      ctx.fillStyle = "#D4AF37";
+      ctx.fillText("Terms: * Applicable on a minimum billing of ₹799.", 300, 700);
+      ctx.fillStyle = "#64748B";
+      ctx.fillText("Valid for one-time use only. Present coupon code before billing.", 300, 722);
+      ctx.fillText("Cannot be redeemed for cash or combined with other promotions.", 300, 742);
+    } else {
+      ctx.fillText("Terms: Valid for one-time use only. Present coupon code before billing.", 300, 720);
+      ctx.fillText("Cannot be redeemed for cash or combined with other promotions.", 300, 740);
+    }
 
     // Download action
     const link = document.createElement("a");
@@ -236,8 +244,15 @@ export default function CouponCard({ coupon }: CouponCardProps) {
             <p className="text-xs font-semibold text-rose-400">
               Valid Till: {formattedExpiry}
             </p>
-            <div className="text-[10px] text-slate-500 px-4 leading-normal italic">
-              * Present this coupon to our staff before placing order/billing. Valid for 1 spin only. Cannot be combined with other offers.
+            <div className="text-[10px] text-slate-500 px-4 leading-normal italic space-y-1">
+              {coupon.rewardName.includes("10%") && (
+                <p className="text-amber-500/90 font-medium not-italic">
+                  * Applicable on a minimum spend/billing of ₹799.
+                </p>
+              )}
+              <p>
+                * Present this coupon to our staff before placing order/billing. Valid for 1 spin only. Cannot be combined with other offers.
+              </p>
             </div>
           </div>
         </div>

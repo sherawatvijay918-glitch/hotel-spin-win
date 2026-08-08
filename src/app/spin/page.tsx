@@ -102,16 +102,12 @@ export default function SpinPage() {
       return;
     }
 
-    if (!mobile.trim()) {
-      setError("Please enter your mobile number.");
-      return;
-    }
-
-    const cleanPhone = mobile.replace(/[^\d+]/g, "");
-    if (cleanPhone.length < 10) {
+    if (mobile.length !== 10) {
       setError("Please enter a valid 10-digit mobile number.");
       return;
     }
+
+    const cleanPhone = mobile;
 
     if (!termsAccepted) {
       setError("You must accept the terms and conditions to proceed.");
@@ -324,7 +320,11 @@ export default function SpinPage() {
                       type="tel"
                       placeholder="e.g., 9876543210"
                       value={mobile}
-                      onChange={(e) => setMobile(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, ""); // strictly numbers only
+                        setMobile(val);
+                      }}
+                      maxLength={10}
                       disabled={submitLoading}
                       required
                       className="block w-full pl-10 pr-3 py-3 bg-slate-950/50 border border-slate-800/80 focus:border-amber-500 rounded-xl text-white outline-none font-mono transition"
@@ -370,6 +370,10 @@ export default function SpinPage() {
                   I agree that I am eligible for only one spin under the terms of this marketing campaign.
                 </span>
               </label>
+
+              <p className="text-[10px] text-amber-500/80 mt-1 font-medium tracking-wide">
+                * Note: The "10% OFF on Food Bill" coupon is applicable on billing of ₹799 and above.
+              </p>
 
               <button
                 type="submit"
