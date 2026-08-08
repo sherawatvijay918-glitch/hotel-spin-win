@@ -68,36 +68,20 @@ function VerificationForm() {
     const cleanCode = codeToVerify.trim().toUpperCase();
 
     try {
-      const q = query(collection(db, "spins"), where("couponCode", "==", cleanCode));
-      const querySnapshot = await getDocs(q);
-
-      if (querySnapshot.empty) {
-        setError("Coupon code not found in system.");
+      const response = await fetch(`/api/admin/verify?code=${encodeURIComponent(cleanCode)}`);
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          setError("Coupon code not found in system.");
+        } else {
+          setError("Failed to verify coupon due to server error.");
+        }
         setChecked(true);
         return;
       }
 
-      let foundCoupon: Coupon | null = null;
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        foundCoupon = {
-          id: doc.id,
-          customerName: data.customerName,
-          mobile: data.mobile,
-          instagramUsername: data.instagramUsername || "",
-          email: data.email || "",
-          rewardId: data.rewardId,
-          rewardName: data.rewardName,
-          couponCode: data.couponCode,
-          createdAt: data.createdAt,
-          expiresAt: data.expiresAt,
-          status: data.status,
-          usedAt: data.usedAt,
-          usedBy: data.usedBy || "",
-        } as Coupon;
-      });
-
-      setCoupon(foundCoupon);
+      const data = await response.json();
+      setCoupon(data.coupon);
       setChecked(true);
     } catch (err) {
       console.error("Verification error:", err);
@@ -112,15 +96,29 @@ function VerificationForm() {
 
     setUpdating(true);
     try {
-      const couponRef = doc(db, "spins", coupon.id);
-      await updateDoc(couponRef, {
-        status: "used",
-        usedAt: serverTimestamp(),
-        usedBy: user?.email || "admin",
+      const response = await fetch("/api/admin/redeem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          couponId: coupon.id,
+          usedBy: user?.email || "admin",
+        }),
       });
 
-      // Refetch to update status UI
-      await verifyCoupon(coupon.couponCode);
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to redeem coupon");
+      }
+
+      // Refresh coupon view locally
+      setCoupon({
+        ...coupon,
+        status: "used",
+        usedAt: new Date().toISOString(),
+        usedBy: user?.email || "admin",
+      } as any);
+      
+      setChecked(true);
     } catch (err) {
       console.error("Redemption error:", err);
       alert("Failed to redeem coupon.");

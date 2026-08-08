@@ -57,14 +57,18 @@ export default function AdminCouponsPage() {
   const fetchCoupons = async () => {
     setLoading(true);
     try {
-      const querySnapshot = await getDocs(collection(db, "spins"));
+      const response = await fetch("/api/admin/data");
+      if (!response.ok) {
+        throw new Error("Failed to fetch coupons data");
+      }
+      const apiData = await response.json();
+      const rawSpins: any[] = apiData.spins || [];
       const list: Coupon[] = [];
       const rewardsSet = new Set<string>();
 
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
+      rawSpins.forEach((data) => {
         const coupon = {
-          id: doc.id,
+          id: data.id,
           customerName: data.customerName,
           mobile: data.mobile,
           instagramUsername: data.instagramUsername || "",
@@ -87,8 +91,8 @@ export default function AdminCouponsPage() {
 
       // Sort by creation date descending
       list.sort((a, b) => {
-        const dateA = a.createdAt ? a.createdAt.toDate() : new Date(0);
-        const dateB = b.createdAt ? b.createdAt.toDate() : new Date(0);
+        const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+        const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
         return dateB.getTime() - dateA.getTime();
       });
 
@@ -108,12 +112,19 @@ export default function AdminCouponsPage() {
   const handleMarkAsUsed = async (coupon: Coupon) => {
     setUpdatingId(coupon.id);
     try {
-      const couponRef = doc(db, "spins", coupon.id);
-      await updateDoc(couponRef, {
-        status: "used",
-        usedAt: serverTimestamp(),
-        usedBy: user?.email || "admin",
+      const response = await fetch("/api/admin/redeem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          couponId: coupon.id,
+          usedBy: user?.email || "admin",
+        }),
       });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to redeem coupon");
+      }
 
       // Refresh list
       await fetchCoupons();

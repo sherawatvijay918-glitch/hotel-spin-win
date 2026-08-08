@@ -43,9 +43,12 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const spinsRef = collection(db, "spins");
-        const q = query(spinsRef, orderBy("createdAt", "desc"));
-        const snapshot = await getDocs(q);
+        const response = await fetch("/api/admin/data");
+        if (!response.ok) {
+          throw new Error("Failed to fetch dashboard data");
+        }
+        const apiData = await response.json();
+        const rawSpins: any[] = apiData.spins || [];
 
         const now = new Date();
         const startOfToday = new Date();
@@ -61,10 +64,9 @@ export default function AdminDashboardPage() {
         const rewardsMap: { [key: string]: number } = {};
         const dailyMap: { [key: string]: number } = {};
 
-        snapshot.forEach((doc) => {
-          const data = doc.data();
+        rawSpins.forEach((data) => {
           const spin = {
-            id: doc.id,
+            id: data.id,
             customerName: data.customerName,
             mobile: data.mobile,
             rewardName: data.rewardName,
@@ -77,9 +79,9 @@ export default function AdminDashboardPage() {
           allSpins.push(spin);
           total++;
 
-          // Parse Timestamps
-          const createdDate = data.createdAt ? data.createdAt.toDate() : new Date();
-          const expiresDate = data.expiresAt ? data.expiresAt.toDate() : new Date();
+          // Parse Dates
+          const createdDate = data.createdAt ? new Date(data.createdAt) : new Date();
+          const expiresDate = data.expiresAt ? new Date(data.expiresAt) : new Date();
 
           // Check if spun today
           if (createdDate >= startOfToday) {
@@ -131,6 +133,7 @@ export default function AdminDashboardPage() {
           .slice(0, 7)
           .reverse();
         setDailyActivity(dailyList);
+        setLoading(false);
       } catch (error) {
         console.error("Error loading real dashboard data, loading Mock Data:", error);
         
