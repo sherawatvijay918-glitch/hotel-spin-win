@@ -17,14 +17,8 @@ interface SpinWheelProps {
 }
 
 const PREMIUM_COLORS = [
-  "#1A365D", // Dark Navy
-  "#8C7A5B", // Premium Bronze
-  "#1E293B", // Slate Grey
-  "#9A3412", // Rich Rust/Amber
-  "#065F46", // Emerald Green
-  "#701A75", // Deep Plum
-  "#9F1239", // Ruby Red
-  "#3B2244", // Royal Purple
+  "#0b0c10", // Carbon Charcoal
+  "#15171e", // Slate Dark Black
 ];
 
 export default function SpinWheel({
@@ -51,19 +45,32 @@ export default function SpinWheel({
 
     const size = canvas.width / 2;
     const center = size / 2;
-    const radius = center - 15; // padding for border
+    const radius = center - 20; // padding for border and outer bulbs
 
     ctx.clearRect(0, 0, size, size);
 
-    // Draw Outer Gold Ring
+    // Draw Outer Gold Ring Frame
     ctx.beginPath();
     ctx.arc(center, center, radius + 8, 0, 2 * Math.PI);
-    ctx.strokeStyle = "#D4AF37"; // Gold border
-    ctx.lineWidth = 10;
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = "rgba(212, 175, 55, 0.4)";
+    const goldGrad = ctx.createLinearGradient(0, 0, size, size);
+    goldGrad.addColorStop(0, "#8a662d");
+    goldGrad.addColorStop(0.25, "#d4af37");
+    goldGrad.addColorStop(0.5, "#fdf0cd");
+    goldGrad.addColorStop(0.75, "#d4af37");
+    goldGrad.addColorStop(1, "#8a662d");
+    ctx.strokeStyle = goldGrad;
+    ctx.lineWidth = 8;
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = "rgba(212, 175, 55, 0.3)";
     ctx.stroke();
     ctx.shadowBlur = 0; // Reset shadow
+
+    // Inner fine gold ring
+    ctx.beginPath();
+    ctx.arc(center, center, radius + 4, 0, 2 * Math.PI);
+    ctx.strokeStyle = "#AA7C11";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
 
     // Draw segments
     for (let i = 0; i < numSegments; i++) {
@@ -81,17 +88,19 @@ export default function SpinWheel({
       ctx.closePath();
       ctx.fill();
 
-      // Inner divider line
-      ctx.strokeStyle = "rgba(212, 175, 55, 0.3)";
+      // Inner divider line (Solid gold thin strokes)
+      ctx.strokeStyle = "rgba(212, 175, 55, 0.4)";
       ctx.lineWidth = 2;
       ctx.stroke();
 
       // Draw Text
       ctx.save();
-      ctx.fillStyle = "#FFFFFF";
-      ctx.font = "bold 13px 'Inter', sans-serif";
+      
+      // Alternate gold and white text
+      ctx.fillStyle = i % 2 === 0 ? "#FFF3D1" : "#FFFFFF";
+      ctx.font = "bold 12px 'Outfit', sans-serif";
       if (size < 400) {
-        ctx.font = "bold 11px 'Inter', sans-serif";
+        ctx.font = "bold 10px 'Outfit', sans-serif";
       }
       ctx.textAlign = "right";
       ctx.textBaseline = "middle";
@@ -106,26 +115,55 @@ export default function SpinWheel({
         displayName = displayName.substring(0, 18) + "...";
       }
 
-      ctx.fillText(displayName, radius - 25, 0);
+      ctx.fillText(displayName, radius - 20, 0);
       ctx.restore();
     }
 
-    // Draw Center Peg (Gold Button)
-    ctx.beginPath();
-    ctx.arc(center, center, 45, 0, 2 * Math.PI);
-    const gradient = ctx.createRadialGradient(center, center, 5, center, center, 45);
-    gradient.addColorStop(0, "#FFF3D1");
-    gradient.addColorStop(0.5, "#D4AF37");
-    gradient.addColorStop(1, "#AA7C11");
-    ctx.fillStyle = gradient;
-    ctx.fill();
+    // Draw Circular Golden Lights (bulbs) around the rim
+    const numBulbs = 24;
+    for (let b = 0; b < numBulbs; b++) {
+      const bulbAngle = b * (2 * Math.PI / numBulbs);
+      const bulbX = center + (radius + 8) * Math.cos(bulbAngle);
+      const bulbY = center + (radius + 8) * Math.sin(bulbAngle);
+      ctx.beginPath();
+      ctx.arc(bulbX, bulbY, 3.5, 0, 2 * Math.PI);
+      ctx.fillStyle = b % 2 === 0 ? "#FFFDF5" : "#E5C158";
+      ctx.shadowBlur = 6;
+      ctx.shadowColor = "#FFFDF5";
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
 
-    // Center text - "7BH"
-    ctx.fillStyle = "#0F1E36";
-    ctx.font = "bold 14px 'Inter', sans-serif";
+    // Draw Center Medallion (Polished Brass 3D look)
+    ctx.beginPath();
+    ctx.arc(center, center, 42, 0, 2 * Math.PI);
+    const gradient = ctx.createRadialGradient(center, center, 0, center, center, 42);
+    gradient.addColorStop(0, "#FFF9E6");
+    gradient.addColorStop(0.3, "#E5C158");
+    gradient.addColorStop(0.8, "#AA7C11");
+    gradient.addColorStop(1, "#5B4004");
+    ctx.fillStyle = gradient;
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Center medallion inner border
+    ctx.beginPath();
+    ctx.arc(center, center, 35, 0, 2 * Math.PI);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Center text - "7BH" (luxury Outfit serif-like uppercase)
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = "bold 13px 'Outfit', sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
+    ctx.shadowColor = "rgba(0, 0, 0, 0.4)";
+    ctx.shadowBlur = 2;
     ctx.fillText("7BH", center, center);
+    ctx.shadowBlur = 0;
   };
 
   // Re-draw when rewards list changes or angle changes

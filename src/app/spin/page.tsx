@@ -142,6 +142,9 @@ export default function SpinPage() {
       } else {
         // Duplicate blocked -> show existing coupon directly
         setExistingCoupon(data.existingSpin);
+        if (data.existingSpin) {
+          localStorage.setItem("user_spin_coupon", JSON.stringify(data.existingSpin));
+        }
         setStep("blocked");
       }
     } catch (err: any) {
@@ -176,14 +179,15 @@ export default function SpinPage() {
         throw new Error(data.message || data.error || "Failed to process spin.");
       }
 
-      setWonCoupon({
+      const wonData = {
         customerName: data.spin.customerName,
         rewardName: data.spin.rewardName,
         couponCode: data.spin.couponCode,
         createdAt: data.spin.createdAt,
         expiresAt: data.spin.expiresAt,
-      });
+      };
 
+      setWonCoupon(wonData);
       setTargetRewardId(data.spin.rewardId);
       setIsSpinning(true);
     } catch (err: any) {
@@ -196,6 +200,9 @@ export default function SpinPage() {
   };
 
   const handleWheelFinished = () => {
+    if (wonCoupon) {
+      localStorage.setItem("user_spin_coupon", JSON.stringify(wonCoupon));
+    }
     setStep("coupon");
     confetti({
       particleCount: 180,
@@ -204,6 +211,24 @@ export default function SpinPage() {
       colors: ["#D4AF37", "#FFFFFF", "#1E293B", "#A87C39"],
     });
   };
+
+  // Check local storage on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("user_spin_coupon");
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (parsed && parsed.couponCode) {
+            setWonCoupon(parsed);
+            setStep("coupon");
+          }
+        } catch (e) {
+          console.error("Error reading stored coupon:", e);
+        }
+      }
+    }
+  }, []);
 
   if (loading) {
     return (
