@@ -1,0 +1,40 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if the user is an authorized admin
+    function isAdmin() {
+      return request.auth != null && 
+        request.auth.token.email != null && 
+        exists(/databases/$(database)/documents/admins/$(request.auth.token.email));
+    }
+
+    // Admins collection: read-only for authenticated users to verify their admin status, writeable only by admins
+    match /admins/{email} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    // Rewards collection: public can read active rewards, only admins can write
+    match /rewards/{rewardId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Settings collection: public can read campaign configurations, only admins can write
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Spins collection: 
+    // - Anyone can retrieve a single spin document (e.g., to view their winning coupon card client-side)
+    // - Only admins can query/list all spins or modify any spin document
+    match /spins/{spinId} {
+      allow get: if true;
+      allow list: if isAdmin();
+      allow write: if isAdmin();
+    }
+  }
+}
