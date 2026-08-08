@@ -69,10 +69,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col md:flex-row">
       {/* MOBILE HEADER */}
-      <header className="md:hidden flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200 z-30">
+      <header className="md:hidden flex items-center justify-between px-6 py-3 bg-white border-b border-slate-200 z-30">
         <div className="flex items-center space-x-2">
-          <Shield className="h-5 w-5 text-amber-600" />
-          <span className="font-serif font-bold text-amber-600 tracking-wider">7BH ADMIN</span>
+          <img
+            src="/image/logo.png"
+            alt="7 Blue Hills Logo"
+            className="h-8 w-auto object-contain"
+          />
+          <span className="text-[10px] text-slate-400 tracking-[0.2em] uppercase font-bold">Admin</span>
         </div>
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -121,16 +125,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className="hidden md:flex md:w-64 bg-white border-r border-slate-200 flex-col justify-between shrink-0 p-6 z-10 shadow-sm">
         <div className="space-y-8">
           {/* Logo Branding */}
-          <div className="flex items-center space-x-3 px-2">
-            <Shield className="h-5 w-5 text-amber-600" />
-            <div>
-              <h2 className="font-serif font-bold text-amber-600 tracking-[0.15em] text-sm uppercase">
-                7 BLUE HILLS
-              </h2>
-              <p className="text-[9px] text-slate-400 tracking-[0.25em] uppercase font-bold">
-                Hotel & Restaurant
-              </p>
-            </div>
+          <div className="flex flex-col items-start px-2 space-y-1">
+            <img
+              src="/image/logo.png"
+              alt="7 Blue Hills Logo"
+              className="h-10 w-auto object-contain"
+            />
+            <p className="text-[9px] text-slate-400 tracking-[0.25em] uppercase font-bold">
+              Hotel & Restaurant
+            </p>
           </div>
 
           {/* Navigation Links */}
