@@ -247,12 +247,10 @@ export default function SpinPage() {
     { rewardId: "6", rewardName: "15% OFF on Room Booking", probability: 7 },
     { rewardId: "7", rewardName: "Room Upgrade FREE", probability: 3 },
     { rewardId: "8", rewardName: "₹500 OFF on Room Booking", probability: 5 },
-  ];
-
-  return (
-    <div className="min-h-screen text-white font-sans flex flex-col justify-between py-8 px-4 md:px-8 relative overflow-hidden bg-[url('/hotel_lobby_bg.png')] bg-cover bg-center">
-      {/* Dark overlay with blur for luxury aesthetic */}
-      <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-md z-0"></div>
+  ];  return (
+    <div className="min-h-screen text-slate-800 font-sans flex flex-col justify-between py-8 px-4 md:px-8 relative overflow-hidden bg-[url('/hotel_lobby_bg.png')] bg-cover bg-center">
+      {/* Light overlay with blur for luxury aesthetic */}
+      <div className="absolute inset-0 bg-white/92 backdrop-blur-md z-0"></div>
 
       {/* Header Branding */}
       <header className="text-center z-10 flex flex-col items-center justify-center space-y-2">
@@ -261,7 +259,7 @@ export default function SpinPage() {
           alt="7 Blue Hills Logo"
           className="h-16 w-auto object-contain hover:scale-105 transition duration-300"
         />
-        <p className="text-slate-400 text-[10px] tracking-[0.4em] uppercase font-bold">
+        <p className="text-slate-500 text-[10px] tracking-[0.4em] uppercase font-bold">
           Hotel & Restaurant
         </p>
       </header>
@@ -272,21 +270,20 @@ export default function SpinPage() {
 
         {/* STEP 2: CUSTOMER DETAILS FORM */}
         {step === "form" && (
-          <div className="w-full hotel-card rounded-2xl p-6 md:p-8 space-y-6 animate-fade-in-up">
-            <div className="hotel-card-inner-frame"></div>
+          <div className="w-full bg-white border border-slate-200 shadow-xl rounded-2xl p-6 md:p-8 space-y-6 animate-fade-in-up relative">
             <div className="text-center space-y-1 z-10 relative">
-              <h2 className="text-2xl font-serif font-light text-white tracking-wider">
+              <h2 className="text-2xl font-serif font-light text-slate-800 tracking-wider">
                 Enter Your Details
               </h2>
               <div className="w-16 h-[1px] bg-amber-500/30 mx-auto my-3"></div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500">
                 Just one step before your lucky spin
               </p>
             </div>
 
             {error && (
-              <div className="bg-rose-950/40 border border-rose-500/30 rounded-xl p-3 flex items-start space-x-2 text-left text-rose-300 text-xs animate-shake z-10 relative">
-                <AlertCircle className="h-4 w-4 text-rose-500 shrink-0 mt-0.5" />
+              <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 flex items-start space-x-2 text-left text-rose-800 text-xs animate-shake z-10 relative">
+                <AlertCircle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
                 <span className="leading-normal">{error}</span>
               </div>
             )}
@@ -294,33 +291,33 @@ export default function SpinPage() {
             <form onSubmit={handleFormSubmit} className="space-y-4 z-10 relative">
               <div className="space-y-3.5">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] text-amber-500/80 font-bold uppercase tracking-wider">Full Name</label>
+                  <label className="text-[10px] text-amber-700 font-bold uppercase tracking-wider">Full Name</label>
                   <div className="relative text-xs">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                       <User size={14} />
                     </div>
                     <input
                       type="text"
-                      placeholder="e.g., John Doe"
+                      placeholder="Enter your full name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       disabled={submitLoading}
                       required
-                      className="block w-full pl-10 pr-3 py-3 bg-slate-950/50 border border-slate-800/80 focus:border-amber-500 rounded-xl text-white outline-none transition"
+                      className="block w-full pl-10 pr-3 py-3 bg-slate-50 border border-slate-200 focus:border-amber-500 rounded-xl text-slate-850 outline-none transition"
                     />
                   </div>
                 </div>
 
                 {/* Mobile number */}
                 <div className="space-y-1.5">
-                  <label className="text-[10px] text-amber-500/80 font-bold uppercase tracking-wider">Mobile Number</label>
+                  <label className="text-[10px] text-amber-700 font-bold uppercase tracking-wider">Mobile Number</label>
                   <div className="relative text-xs">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                       <Phone size={14} />
                     </div>
                     <input
                       type="tel"
-                      placeholder="e.g., 9876543210"
+                      placeholder="Enter 10-digit mobile number"
                       value={mobile}
                       onChange={(e) => {
                         const val = e.target.value.replace(/\D/g, ""); // strictly numbers only
@@ -329,33 +326,33 @@ export default function SpinPage() {
                       maxLength={10}
                       disabled={submitLoading}
                       required
-                      className="block w-full pl-10 pr-3 py-3 bg-slate-950/50 border border-slate-800/80 focus:border-amber-500 rounded-xl text-white outline-none font-mono transition"
+                      className="block w-full pl-10 pr-3 py-3 bg-slate-50 border border-slate-200 focus:border-amber-500 rounded-xl text-slate-850 outline-none font-mono transition"
                     />
                   </div>
                 </div>
 
                 {/* Email (Optional) */}
                 <div className="space-y-1.5">
-                  <label className="text-[10px] text-amber-500/80 font-bold uppercase tracking-wider">Email Address (Optional)</label>
+                  <label className="text-[10px] text-amber-700 font-bold uppercase tracking-wider">Email Address (Optional)</label>
                   <div className="relative text-xs">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                       <Mail size={14} />
                     </div>
                     <input
                       type="email"
-                      placeholder="e.g., john@example.com"
+                      placeholder="Enter email address (optional)"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       disabled={submitLoading}
-                      className="block w-full pl-10 pr-3 py-3 bg-slate-950/50 border border-slate-800/80 focus:border-amber-500 rounded-xl text-white outline-none transition"
+                      className="block w-full pl-10 pr-3 py-3 bg-slate-50 border border-slate-200 focus:border-amber-500 rounded-xl text-slate-850 outline-none transition"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Privacy Message */}
-              <div className="text-[10px] text-slate-500 leading-normal bg-slate-950/30 p-2.5 rounded-lg border border-slate-800/40 flex items-start gap-2">
-                <ShieldCheck size={14} className="text-amber-500/70 shrink-0 mt-0.5" />
+              <div className="text-[10px] text-slate-550 leading-normal bg-slate-50 p-2.5 rounded-lg border border-slate-200 flex items-start gap-2">
+                <ShieldCheck size={14} className="text-amber-600 shrink-0 mt-0.5" />
                 <span>Your details are used only for this offer and coupon verification. We value your privacy.</span>
               </div>
 
@@ -366,21 +363,21 @@ export default function SpinPage() {
                   checked={termsAccepted}
                   onChange={(e) => setTermsAccepted(e.target.checked)}
                   disabled={submitLoading}
-                  className="mt-0.5 rounded border-slate-850 text-amber-500 focus:ring-amber-500 bg-slate-950 focus:ring-offset-slate-900"
+                  className="mt-0.5 rounded border-slate-300 text-amber-500 focus:ring-amber-500 bg-slate-50 focus:ring-offset-white"
                 />
-                <span className="text-[10px] text-slate-400 leading-normal">
+                <span className="text-[10px] text-slate-500 leading-normal">
                   I agree that I am eligible for only one spin under the terms of this marketing campaign.
                 </span>
               </label>
 
-              <p className="text-[10px] text-amber-500/80 mt-1 font-medium tracking-wide">
+              <p className="text-[10px] text-amber-700 mt-1 font-medium tracking-wide">
                 * Note: The "10% OFF on Food Bill" coupon is applicable on billing of ₹799 and above.
               </p>
 
               <button
                 type="submit"
                 disabled={submitLoading}
-                className="w-full flex items-center justify-center py-3.5 btn-gold-shimmer rounded-xl transition duration-200 text-xs uppercase select-none cursor-pointer"
+                className="w-full flex items-center justify-center py-3.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition duration-200 text-xs uppercase select-none cursor-pointer shadow-sm"
               >
                 {submitLoading ? (
                   <>
@@ -398,25 +395,26 @@ export default function SpinPage() {
           </div>
         )}
 
+
         {/* STEP 3: LUCKY SPIN WHEEL SCREEN */}
         {step === "wheel" && (
           <div className="w-full flex flex-col items-center space-y-6 animate-fade-in-up">
             <div className="text-center space-y-1">
-              <span className="text-[10px] text-amber-500 font-bold uppercase tracking-widest bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full">
+              <span className="text-[10px] text-amber-700 font-bold uppercase tracking-widest bg-amber-50 border border-amber-500/20 px-3 py-1 rounded-full">
                 Step 3 of 4
               </span>
-              <h2 className="text-2xl font-serif font-light text-white tracking-wider mt-2">
+              <h2 className="text-2xl font-serif font-light text-slate-800 tracking-wider mt-2">
                 Your Lucky Spin Awaits
               </h2>
               <div className="w-16 h-[1px] bg-amber-500/30 mx-auto my-3"></div>
-              <p className="text-xs text-slate-400 px-4">
+              <p className="text-xs text-slate-550 px-4">
                 One spin. One special reward. Tap spin below to discover your fortune.
               </p>
             </div>
 
             {error && (
-              <div className="w-full bg-rose-950/40 border border-rose-500/30 rounded-xl p-3 flex items-start space-x-2 text-rose-350 text-xs animate-shake">
-                <AlertCircle className="h-4 w-4 text-rose-500 shrink-0 mt-0.5" />
+              <div className="w-full bg-rose-50 border border-rose-250 rounded-xl p-3 flex items-start space-x-2 text-rose-800 text-xs animate-shake">
+                <AlertCircle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
                 <span className="leading-normal">{error}</span>
               </div>
             )}
@@ -437,7 +435,7 @@ export default function SpinPage() {
               <button
                 onClick={triggerSpin}
                 disabled={submitLoading}
-                className="w-full max-w-[280px] py-4 btn-gold-shimmer rounded-xl text-xs uppercase tracking-widest select-none cursor-pointer flex items-center justify-center gap-2"
+                className="w-full max-w-[280px] py-4 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-xs uppercase tracking-widest select-none cursor-pointer flex items-center justify-center gap-2 shadow-sm"
               >
                 {submitLoading ? (
                   <>
@@ -455,8 +453,8 @@ export default function SpinPage() {
 
             {isSpinning && (
               <div className="flex flex-col items-center space-y-2 py-4">
-                <Loader2 className="animate-spin text-amber-500 h-8 w-8" />
-                <p className="text-xs font-semibold text-amber-500 animate-pulse uppercase tracking-wider">
+                <Loader2 className="animate-spin text-amber-650 h-8 w-8" />
+                <p className="text-xs font-semibold text-amber-650 animate-pulse uppercase tracking-wider">
                   The wheel is spinning! Good Luck...
                 </p>
               </div>
@@ -468,12 +466,12 @@ export default function SpinPage() {
         {step === "coupon" && wonCoupon && (
           <div className="w-full space-y-4 animate-fade-in-up">
             <div className="text-center space-y-1 py-1">
-              <h2 className="text-2xl font-serif font-bold text-amber-500 flex items-center justify-center gap-1.5">
+              <h2 className="text-2xl font-serif font-bold text-amber-600 flex items-center justify-center gap-1.5">
                 <Sparkles className="text-amber-400" />
                 Congratulations!
                 <Sparkles className="text-amber-400" />
               </h2>
-              <p className="text-xs text-slate-300">
+              <p className="text-xs text-slate-600">
                 You won an exclusive reward. Show this card at our desk:
               </p>
             </div>
@@ -484,21 +482,20 @@ export default function SpinPage() {
         {/* DUPLICATE BLOCKED STATE */}
         {step === "blocked" && existingCoupon && (
           <div className="w-full space-y-6 text-center animate-fade-in-up">
-            <div className="hotel-card rounded-2xl p-6 md:p-8 space-y-6">
-              <div className="hotel-card-inner-frame"></div>
+            <div className="bg-white border border-slate-200 shadow-xl rounded-2xl p-6 md:p-8 space-y-6 relative">
               <div className="space-y-2 z-10 relative">
-                <div className="w-12 h-12 bg-amber-500/10 border border-amber-500/30 text-amber-500 rounded-full flex items-center justify-center mx-auto">
+                <div className="w-12 h-12 bg-amber-50 border border-amber-500/20 text-amber-650 rounded-full flex items-center justify-center mx-auto">
                   <Ticket size={24} />
                 </div>
-                <h2 className="text-xl font-serif font-light text-white tracking-wider mt-2">
+                <h2 className="text-xl font-serif font-light text-slate-800 tracking-wider mt-2">
                   Already Participated
                 </h2>
-                <p className="text-xs text-slate-400 px-2 leading-relaxed">
+                <p className="text-xs text-slate-500 px-2 leading-relaxed">
                   Our system shows that you have already received your Lucky Spin. We have loaded your existing active reward voucher below:
                 </p>
               </div>
 
-              <div className="border-t border-slate-800 pt-4 z-10 relative">
+              <div className="border-t border-slate-100 pt-4 z-10 relative">
                 <CouponCard coupon={existingCoupon} />
               </div>
             </div>
@@ -507,7 +504,7 @@ export default function SpinPage() {
       </main>
 
       {/* Footer Copyright */}
-      <footer className="text-center text-[10px] text-slate-600 z-10 pt-6">
+      <footer className="text-center text-[10px] text-slate-500 z-10 pt-6">
         &copy; {new Date().getFullYear()} 7 Blue Hills Hotel & Restaurant. All Rights Reserved.
       </footer>
     </div>
