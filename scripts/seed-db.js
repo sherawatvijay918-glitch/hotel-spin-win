@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
-const admin = require("firebase-admin");
+const { initializeApp, cert } = require("firebase-admin/app");
+const { getFirestore, Timestamp, FieldValue } = require("firebase-admin/firestore");
 
 // Helper to load .env.local
 const envPath = path.resolve(__dirname, "../.env.local");
@@ -24,7 +25,7 @@ if (fs.existsSync(envPath)) {
 
 const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
 let privateKey = process.env.FIREBASE_PRIVATE_KEY;
-const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+const projectId = process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 
 if (privateKey) {
   privateKey = privateKey.replace(/^"|"$/g, "").replace(/\\n/g, "\n");
@@ -36,15 +37,15 @@ if (!clientEmail || !privateKey || !projectId) {
 }
 
 // Initialize Admin SDK
-admin.initializeApp({
-  credential: admin.credential.cert({
+initializeApp({
+  credential: cert({
     projectId,
     clientEmail,
     privateKey,
   }),
 });
 
-const db = admin.firestore();
+const db = getFirestore();
 
 const defaultRewards = [
   {
@@ -147,8 +148,8 @@ async function seed() {
 
   await db.collection("settings").doc("campaign").set({
     campaignActive: true,
-    spinStartDate: admin.firestore.Timestamp.fromDate(startDate),
-    spinEndDate: admin.firestore.Timestamp.fromDate(endDate),
+    spinStartDate: Timestamp.fromDate(startDate),
+    spinEndDate: Timestamp.fromDate(endDate),
     spinEligibility: "one_per_mobile",
   });
   console.log("- Seeded campaign settings.");
@@ -159,7 +160,7 @@ async function seed() {
   await db.collection("admins").doc(adminEmail).set({
     email: adminEmail,
     role: "admin",
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    createdAt: FieldValue.serverTimestamp(),
   });
   console.log(`- Seeded admin email: ${adminEmail}`);
 
