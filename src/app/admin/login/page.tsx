@@ -15,7 +15,9 @@ export default function AdminLoginPage() {
   // Redirect if already logged in and verified as admin
   useEffect(() => {
     if (!loading && user && isAdmin) {
-      router.push("/admin");
+      const params = new URLSearchParams(window.location.search);
+      const dest = params.get("redirect") || "/admin";
+      router.push(dest);
     }
   }, [user, isAdmin, loading, router]);
 

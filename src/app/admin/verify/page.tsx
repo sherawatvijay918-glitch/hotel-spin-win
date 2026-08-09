@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, Suspense } from "react";
+import React, { useEffect, useState, useRef, Suspense } from "react";
 import { collection, query, where, getDocs, doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
@@ -18,6 +18,7 @@ import {
   Gift,
   Calendar,
   Lock,
+  Camera,
 } from "lucide-react";
 
 interface Coupon {
@@ -47,6 +48,19 @@ function VerificationForm() {
   const [checked, setChecked] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Load jsQR library dynamically on mount
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js";
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   // Auto-verify if "code" query param is present
   useEffect(() => {
@@ -87,6 +101,83 @@ function VerificationForm() {
       console.error("Verification error:", err);
       setError("Failed to verify coupon due to network error.");
     } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleScanClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setLoading(true);
+    setChecked(false);
+    setError(null);
+    setCoupon(null);
+
+    try {
+      const img = new Image();
+      img.src = URL.createObjectURL(file);
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          setError("Failed to initialize scanner canvas.");
+          setChecked(true);
+          setLoading(false);
+          return;
+        }
+
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0, img.width, img.height);
+
+        const imageData = ctx.getImageData(0, 0, img.width, img.height);
+        
+        // Decode using jsQR (which will be loaded on window)
+        const jsQR = (window as any).jsQR;
+        if (!jsQR) {
+          setError("QR decoder library is loading. Please try again in a moment.");
+          setChecked(true);
+          setLoading(false);
+          return;
+        }
+
+        const codeResult = jsQR(imageData.data, imageData.width, imageData.height, {
+          inversionAttempts: "dontInvert",
+        });
+
+        if (codeResult && codeResult.data) {
+          let decodedCode = codeResult.data;
+          try {
+            // Check if it's the full verification URL: https://.../admin/verify?code=7BH-XXXX
+            if (decodedCode.includes("verify?code=")) {
+              const urlObj = new URL(decodedCode);
+              const urlParam = urlObj.searchParams.get("code");
+              if (urlParam) {
+                decodedCode = urlParam;
+              }
+            }
+          } catch (urlErr) {
+            // Not a URL, use raw string
+          }
+
+          const finalCode = decodedCode.trim().toUpperCase();
+          setCode(finalCode);
+          verifyCoupon(finalCode);
+        } else {
+          setError("No QR code detected. Try taking a clearer, well-lit photo of the QR code.");
+          setChecked(true);
+          setLoading(false);
+        }
+      };
+    } catch (err) {
+      console.error("QR Scan error:", err);
+      setError("Failed to read image file.");
+      setChecked(true);
       setLoading(false);
     }
   };
@@ -146,6 +237,15 @@ function VerificationForm() {
     <div className="max-w-xl mx-auto space-y-8 text-slate-850">
       {/* Verify Code Search Form */}
       <form onSubmit={handleSearchSubmit} className="flex gap-2">
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+        />
+
         <div className="relative flex-1">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
             <Ticket size={16} />
@@ -160,10 +260,22 @@ function VerificationForm() {
             className="block w-full pl-10 pr-3 py-3 bg-white border border-slate-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-sm placeholder-slate-400 text-slate-800 font-mono uppercase outline-none transition duration-200 shadow-sm"
           />
         </div>
+
+        <button
+          type="button"
+          onClick={handleScanClick}
+          disabled={loading}
+          className="bg-slate-100 hover:bg-slate-200 disabled:opacity-50 text-slate-700 font-bold px-4 rounded-xl flex items-center gap-1.5 transition duration-150 text-sm select-none cursor-pointer border border-slate-200 shadow-sm"
+          title="Scan QR Code using Camera"
+        >
+          <Camera size={16} className="text-amber-600" />
+          <span className="hidden sm:inline">Scan QR</span>
+        </button>
+
         <button
           type="submit"
           disabled={loading}
-          className="bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white font-bold px-6 rounded-xl flex items-center gap-1.5 transition duration-150 text-sm select-none cursor-pointer"
+          className="bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white font-bold px-6 rounded-xl flex items-center gap-1.5 transition duration-150 text-sm select-none cursor-pointer shadow-sm"
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
           <span>Verify</span>
