@@ -185,25 +185,29 @@ function VerificationForm() {
     try {
       const video = videoRef.current;
       if (video && video.readyState === video.HAVE_ENOUGH_DATA) {
+        const videoWidth = video.videoWidth;
+        const videoHeight = video.videoHeight;
+
+        // Crop the center square area of the video frame (where the viewfinder is)
+        // This keeps the QR code at full resolution/sharpness while keeping pixel count low!
+        const scanSize = Math.min(videoWidth, videoHeight) * 0.70; // 70% of min dimension
+        const sx = (videoWidth - scanSize) / 2;
+        const sy = (videoHeight - scanSize) / 2;
+
         const canvas = document.createElement("canvas");
-        
-        // Downscale to 480px width (processes ~90% fewer pixels for 10x faster decoding)
-        const targetWidth = 480;
-        const scale = targetWidth / video.videoWidth;
-        const targetHeight = Math.floor(video.videoHeight * scale);
-        
-        canvas.width = targetWidth;
-        canvas.height = targetHeight;
+        canvas.width = 400; // Fixed size for fast processing
+        canvas.height = 400;
         
         const ctx = canvas.getContext("2d");
         
         if (ctx) {
-          ctx.drawImage(video, 0, 0, targetWidth, targetHeight);
-          const imageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
+          // Draw only the cropped center region of the video frame
+          ctx.drawImage(video, sx, sy, scanSize, scanSize, 0, 0, 400, 400);
+          const imageData = ctx.getImageData(0, 0, 400, 400);
           
           const jsQR = (window as any).jsQR;
           if (jsQR) {
-            const codeResult = jsQR(imageData.data, imageData.width, imageData.height, {
+            const codeResult = jsQR(imageData.data, 400, 400, {
               inversionAttempts: "dontInvert",
             });
 
@@ -237,12 +241,11 @@ function VerificationForm() {
       console.error("Frame scanning processing error:", e);
     }
 
-    // Schedule the next scan frame after 150ms.
-    // This stops video lagging and decodes QR codes instantly!
+    // Schedule the next scan frame after 100ms.
     if (isScanningActiveRef.current) {
       setTimeout(() => {
         requestAnimationFrame(scanVideoFrame);
-      }, 150);
+      }, 100);
     }
   };
 
