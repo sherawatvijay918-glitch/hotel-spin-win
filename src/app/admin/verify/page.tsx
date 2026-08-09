@@ -49,7 +49,14 @@ function VerificationForm() {
   const [error, setError] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isScanning, setIsScanning] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string>("");
+
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const isScanningActiveRef = useRef(false);
 
   // Load jsQR library dynamically on mount
   useEffect(() => {
@@ -57,8 +64,10 @@ function VerificationForm() {
     script.src = "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js";
     script.async = true;
     document.body.appendChild(script);
+    
     return () => {
       document.body.removeChild(script);
+      stopCamera();
     };
   }, []);
 
@@ -76,11 +85,150 @@ function VerificationForm() {
     const triggerScan = searchParams.get("scan");
     if (triggerScan === "true") {
       const timer = setTimeout(() => {
-        handleScanClick();
-      }, 600);
+        startCamera();
+      }, 800);
       return () => clearTimeout(timer);
     }
   }, [searchParams]);
+
+  const playBeep = () => {
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(1000, audioCtx.currentTime); // 1000Hz tone
+      gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + 0.12); // Beep duration 120ms
+    } catch (e) {
+      console.error("Audio beep error:", e);
+    }
+  };
+
+  const startCamera = async (deviceId?: string) => {
+    setCameraError(null);
+    setIsScanning(true);
+    isScanningActiveRef.current = true;
+
+    // Stop any existing streams first
+    stopCamera();
+
+    try {
+      const constraints: MediaStreamConstraints = {
+        video: deviceId 
+          ? { deviceId: { exact: deviceId } } 
+          : { facingMode: "environment" }
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      streamRef.current = stream;
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play().catch(err => {
+          console.error("Video play error:", err);
+        });
+        
+        // Start scanning frames
+        requestAnimationFrame(scanVideoFrame);
+      }
+
+      // Enumerate cameras
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const cameras = devices.filter(d => d.kind === "videoinput");
+      setVideoDevices(cameras);
+      
+      // Auto-select active device id
+      if (!deviceId && cameras.length > 0) {
+        const activeTrack = stream.getVideoTracks()[0];
+        const activeSettings = activeTrack?.getSettings();
+        if (activeSettings?.deviceId) {
+          setSelectedDeviceId(activeSettings.deviceId);
+        }
+      }
+    } catch (err: any) {
+      console.error("Camera access error:", err);
+      if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
+        setCameraError("Camera permission denied. Please allow camera access in your browser settings.");
+      } else {
+        setCameraError("Failed to access camera. Please make sure no other application is using it.");
+      }
+    }
+  };
+
+  const stopCamera = () => {
+    isScanningActiveRef.current = false;
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  };
+
+  const closeScanner = () => {
+    stopCamera();
+    setIsScanning(false);
+    setCameraError(null);
+  };
+
+  const scanVideoFrame = () => {
+    if (!isScanningActiveRef.current) return;
+
+    if (videoRef.current && videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
+      const canvas = document.createElement("canvas");
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      const ctx = canvas.getContext("2d");
+      
+      if (ctx) {
+        ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        
+        const jsQR = (window as any).jsQR;
+        if (jsQR) {
+          const codeResult = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: "dontInvert",
+          });
+
+          if (codeResult && codeResult.data) {
+            // Found QR Code!
+            playBeep();
+            
+            let decodedCode = codeResult.data;
+            try {
+              if (decodedCode.includes("verify?code=")) {
+                const urlObj = new URL(decodedCode);
+                const urlParam = urlObj.searchParams.get("code");
+                if (urlParam) {
+                  decodedCode = urlParam;
+                }
+              }
+            } catch (urlErr) {
+              // Not a URL
+            }
+
+            const finalCode = decodedCode.trim().toUpperCase();
+            setCode(finalCode);
+            verifyCoupon(finalCode);
+            closeScanner();
+            return;
+          }
+        }
+      }
+    }
+
+    if (isScanningActiveRef.current) {
+      requestAnimationFrame(scanVideoFrame);
+    }
+  };
 
   const verifyCoupon = async (codeToVerify: string) => {
     if (!codeToVerify.trim()) return;
@@ -112,83 +260,6 @@ function VerificationForm() {
       console.error("Verification error:", err);
       setError("Failed to verify coupon due to network error.");
     } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleScanClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setLoading(true);
-    setChecked(false);
-    setError(null);
-    setCoupon(null);
-
-    try {
-      const img = new Image();
-      img.src = URL.createObjectURL(file);
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-        if (!ctx) {
-          setError("Failed to initialize scanner canvas.");
-          setChecked(true);
-          setLoading(false);
-          return;
-        }
-
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0, img.width, img.height);
-
-        const imageData = ctx.getImageData(0, 0, img.width, img.height);
-        
-        // Decode using jsQR (which will be loaded on window)
-        const jsQR = (window as any).jsQR;
-        if (!jsQR) {
-          setError("QR decoder library is loading. Please try again in a moment.");
-          setChecked(true);
-          setLoading(false);
-          return;
-        }
-
-        const codeResult = jsQR(imageData.data, imageData.width, imageData.height, {
-          inversionAttempts: "dontInvert",
-        });
-
-        if (codeResult && codeResult.data) {
-          let decodedCode = codeResult.data;
-          try {
-            // Check if it's the full verification URL: https://.../admin/verify?code=7BH-XXXX
-            if (decodedCode.includes("verify?code=")) {
-              const urlObj = new URL(decodedCode);
-              const urlParam = urlObj.searchParams.get("code");
-              if (urlParam) {
-                decodedCode = urlParam;
-              }
-            }
-          } catch (urlErr) {
-            // Not a URL, use raw string
-          }
-
-          const finalCode = decodedCode.trim().toUpperCase();
-          setCode(finalCode);
-          verifyCoupon(finalCode);
-        } else {
-          setError("No QR code detected. Try taking a clearer, well-lit photo of the QR code.");
-          setChecked(true);
-          setLoading(false);
-        }
-      };
-    } catch (err) {
-      console.error("QR Scan error:", err);
-      setError("Failed to read image file.");
-      setChecked(true);
       setLoading(false);
     }
   };
@@ -248,15 +319,6 @@ function VerificationForm() {
     <div className="max-w-xl mx-auto space-y-8 text-slate-850">
       {/* Verify Code Search Form */}
       <form onSubmit={handleSearchSubmit} className="flex gap-2">
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          accept="image/*"
-          capture="environment"
-          className="hidden"
-        />
-
         <div className="relative flex-1">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
             <Ticket size={16} />
@@ -274,10 +336,10 @@ function VerificationForm() {
 
         <button
           type="button"
-          onClick={handleScanClick}
+          onClick={() => startCamera()}
           disabled={loading}
           className="bg-slate-100 hover:bg-slate-200 disabled:opacity-50 text-slate-700 font-bold px-4 rounded-xl flex items-center gap-1.5 transition duration-150 text-sm select-none cursor-pointer border border-slate-200 shadow-sm"
-          title="Scan QR Code using Camera"
+          title="Scan QR Code using Live Video Camera"
         >
           <Camera size={16} className="text-amber-600" />
           <span className="hidden sm:inline">Scan QR</span>
@@ -435,6 +497,100 @@ function VerificationForm() {
               Redemption Locked
             </button>
           )}
+        </div>
+      )}
+
+      {/* LIVE CAMERA SCANNER MODAL */}
+      {isScanning && (
+        <div className="fixed inset-0 bg-slate-950/95 z-50 flex flex-col justify-between items-center py-10 px-6 text-white animate-fade-in">
+          {/* Inline CSS for laser animation */}
+          <style dangerouslySetInnerHTML={{__html: `
+            @keyframes laser {
+              0% { top: 0%; }
+              50% { top: 100%; }
+              100% { top: 0%; }
+            }
+            .animate-laser {
+              animation: laser 2.5s linear infinite;
+            }
+          `}} />
+
+          {/* Scanner Header */}
+          <div className="text-center space-y-1.5 z-10">
+            <h3 className="text-xl font-serif font-light text-amber-500 tracking-wider">
+              Live QR Ticket Scanner
+            </h3>
+            <p className="text-[11px] text-slate-400 max-w-xs">
+              Point your camera at the customer's Spin ticket QR code to verify details instantly.
+            </p>
+          </div>
+
+          {/* Viewfinder Video Frame */}
+          <div className="relative my-auto flex flex-col items-center">
+            {cameraError ? (
+              <div className="w-64 h-64 border border-rose-500 bg-rose-950/20 rounded-2xl flex flex-col items-center justify-center p-4 text-center text-xs text-rose-300">
+                <AlertTriangle size={36} className="text-rose-500 mb-2 animate-bounce" />
+                <p className="font-semibold">Camera Error</p>
+                <p className="mt-1 leading-normal text-[11px]">{cameraError}</p>
+              </div>
+            ) : (
+              <div className="relative w-64 h-64 border-2 border-amber-500 rounded-2xl overflow-hidden shadow-[0_0_20px_rgba(245,158,11,0.3)] bg-black">
+                <video
+                  ref={videoRef}
+                  playsInline
+                  muted
+                  className="w-full h-full object-cover"
+                />
+                
+                {/* Viewfinder Target grid corners */}
+                <div className="absolute top-4 left-4 w-4 h-4 border-t-2 border-l-2 border-amber-400"></div>
+                <div className="absolute top-4 right-4 w-4 h-4 border-t-2 border-r-2 border-amber-400"></div>
+                <div className="absolute bottom-4 left-4 w-4 h-4 border-b-2 border-l-2 border-amber-400"></div>
+                <div className="absolute bottom-4 right-4 w-4 h-4 border-b-2 border-r-2 border-amber-400"></div>
+
+                {/* Laser animation */}
+                <div className="absolute left-0 right-0 h-0.5 bg-amber-500 animate-laser shadow-[0_0_8px_#f59e0b]"></div>
+              </div>
+            )}
+
+            {!cameraError && (
+              <p className="text-[10px] text-amber-500 font-bold uppercase tracking-widest mt-4 animate-pulse">
+                Scanning Live Stream...
+              </p>
+            )}
+          </div>
+
+          {/* Bottom actions & Camera Select */}
+          <div className="flex flex-col items-center gap-6 w-full max-w-sm z-10">
+            {/* Camera Select dropdown */}
+            {!cameraError && videoDevices.length > 1 && (
+              <div className="flex flex-col gap-1 items-center w-full px-4">
+                <span className="text-[9px] text-slate-400 uppercase tracking-widest font-bold">Select Active Lens</span>
+                <select
+                  value={selectedDeviceId}
+                  onChange={(e) => {
+                    setSelectedDeviceId(e.target.value);
+                    startCamera(e.target.value);
+                  }}
+                  className="w-full bg-slate-900 border border-slate-700 text-white rounded-xl p-2.5 text-xs outline-none cursor-pointer focus:border-amber-500"
+                >
+                  {videoDevices.map((device, idx) => (
+                    <option key={device.deviceId} value={device.deviceId}>
+                      {device.label || `Camera ${idx + 1}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Cancel Button */}
+            <button
+              onClick={closeScanner}
+              className="bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs uppercase tracking-wider px-8 py-3 rounded-full transition duration-150 select-none cursor-pointer border border-slate-700"
+            >
+              Cancel Scanner
+            </button>
+          </div>
         </div>
       )}
     </div>
