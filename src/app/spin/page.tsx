@@ -40,7 +40,7 @@ type Step = "form" | "wheel" | "coupon" | "blocked";
 export default function SpinPage() {
   const [step, setStep] = useState<Step>("form");
   const [rewards, setRewards] = useState<Reward[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Form states
@@ -225,17 +225,6 @@ export default function SpinPage() {
       }
     }
   }, []);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center text-white px-4">
-        <Loader2 className="h-10 w-10 text-amber-500 animate-spin mb-4" />
-        <p className="text-sm text-slate-400 font-medium tracking-wide">
-          Loading Campaign Experience...
-        </p>
-      </div>
-    );
-  }
 
   // Pre-configured fallback wheel segments if database is empty
   const activeRewardsList = rewards.length > 0 ? rewards : [
