@@ -13,6 +13,7 @@ import {
   TrendingUp,
   Loader2,
   Calendar,
+  Camera,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -251,9 +252,20 @@ export default function AdminDashboardPage() {
             Real-time metrics and coupon management for 7 Blue Hills.
           </p>
         </div>
-        <div className="flex items-center space-x-2 bg-white border border-slate-200 shadow-sm rounded-xl px-4 py-2 text-[10px] uppercase tracking-wider text-slate-500 font-bold self-start">
-          <Calendar size={12} className="text-amber-600" />
-          <span>Live Data Feed</span>
+        
+        <div className="flex items-center gap-3 self-start">
+          <Link
+            href="/admin/verify?scan=true"
+            className="flex items-center space-x-2 bg-amber-500 hover:bg-amber-600 text-white shadow-sm rounded-xl px-4 py-2.5 text-[10px] uppercase tracking-wider font-bold transition duration-150 cursor-pointer"
+          >
+            <Camera size={12} />
+            <span>Scan Ticket QR</span>
+          </Link>
+          
+          <div className="flex items-center space-x-2 bg-white border border-slate-200 shadow-sm rounded-xl px-4 py-2.5 text-[10px] uppercase tracking-wider text-slate-500 font-bold">
+            <Calendar size={12} className="text-amber-600" />
+            <span>Live Data Feed</span>
+          </div>
         </div>
       </div>
 

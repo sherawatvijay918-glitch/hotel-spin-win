@@ -71,6 +71,17 @@ function VerificationForm() {
     }
   }, [searchParams]);
 
+  // Auto-trigger scanner if "scan=true" query param is present
+  useEffect(() => {
+    const triggerScan = searchParams.get("scan");
+    if (triggerScan === "true") {
+      const timer = setTimeout(() => {
+        handleScanClick();
+      }, 600);
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams]);
+
   const verifyCoupon = async (codeToVerify: string) => {
     if (!codeToVerify.trim()) return;
 
