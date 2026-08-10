@@ -184,7 +184,16 @@ export default function SpinPage() {
       };
 
       setWonCoupon(wonData);
-      setTargetRewardId(data.spin.rewardId);
+      
+      // If won reward is 10% OFF, select one of the three 10% segments on the wheel randomly
+      if (data.spin.rewardId === "food-10") {
+        const tenPercentIds = ["food-10", "food-10-2", "food-10-3"];
+        const randomTargetId = tenPercentIds[Math.floor(Math.random() * tenPercentIds.length)];
+        setTargetRewardId(randomTargetId);
+      } else {
+        setTargetRewardId(data.spin.rewardId);
+      }
+      
       setIsSpinning(true);
     } catch (err: any) {
       console.error("Spin claim error:", err);
@@ -226,16 +235,16 @@ export default function SpinPage() {
     }
   }, []);
 
-  // Pre-configured fallback wheel segments if database is empty
-  const activeRewardsList = rewards.length > 0 ? rewards : [
-    { rewardId: "1", rewardName: "10% OFF on Food Bill", probability: 25 },
-    { rewardId: "2", rewardName: "Welcome Drink FREE", probability: 20 },
-    { rewardId: "3", rewardName: "Starter FREE", probability: 15 },
-    { rewardId: "4", rewardName: "Dessert FREE", probability: 15 },
-    { rewardId: "5", rewardName: "Breakfast for 2 FREE", probability: 10 },
-    { rewardId: "6", rewardName: "15% OFF on Room Booking", probability: 7 },
-    { rewardId: "7", rewardName: "Room Upgrade FREE", probability: 3 },
-    { rewardId: "8", rewardName: "₹500 OFF on Room Booking", probability: 5 },
+  // Pre-configured wheel segments (10% OFF in 3 places as requested)
+  const activeRewardsList = [
+    { rewardId: "food-10", rewardName: "10% OFF on Food Bill", probability: 25 },
+    { rewardId: "welcome-drink", rewardName: "Welcome Drink FREE", probability: 20 },
+    { rewardId: "starter-free", rewardName: "Starter FREE", probability: 15 },
+    { rewardId: "food-10-2", rewardName: "10% OFF on Food Bill", probability: 25 },
+    { rewardId: "dessert-free", rewardName: "Dessert FREE", probability: 15 },
+    { rewardId: "breakfast-2", rewardName: "Breakfast for 2 FREE", probability: 10 },
+    { rewardId: "food-10-3", rewardName: "10% OFF on Food Bill", probability: 25 },
+    { rewardId: "room-upgrade", rewardName: "Room Upgrade FREE", probability: 5 },
   ];  return (
     <div className="min-h-screen text-slate-800 font-sans flex flex-col justify-between py-8 px-4 md:px-8 relative overflow-hidden bg-[url('/hotel_lobby_bg.png')] bg-cover bg-center">
       {/* Light overlay with blur for luxury aesthetic */}

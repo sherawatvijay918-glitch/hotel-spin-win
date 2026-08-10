@@ -68,16 +68,7 @@ export async function POST(request: Request) {
         );
       }
 
-      // Sample mock rewards
-      const mockRewards = [
-        "FREE Welcome Drink",
-        "15% OFF Dining Bill",
-        "FREE Starter Item",
-        "Dessert of Choice",
-        "Buy 1 Get 1 Coffee",
-        "FREE Chef Special",
-      ];
-      const selectedRewardName = mockRewards[Math.floor(Math.random() * mockRewards.length)];
+      const selectedRewardName = "10% OFF on Food Bill";
       const couponCode = generateCouponCode();
       const now = new Date();
       const expiresAt = new Date();
@@ -91,7 +82,7 @@ export async function POST(request: Request) {
         instagramUsernameNormalized: "",
         email: email ? email.trim() : "",
         followConfirmed: true,
-        rewardId: "mock-reward-id",
+        rewardId: "food-10",
         rewardName: selectedRewardName,
         couponCode,
         createdAt: now.toISOString(),
@@ -188,24 +179,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "All rewards have reached their limit." }, { status: 500 });
     }
 
-    // 5. Weighted Random Selection
-    const totalWeight = rewards.reduce((sum, r) => sum + (Number(r.probability) || 0), 0);
-    let selectedReward = null;
-
-    if (totalWeight <= 0) {
-      selectedReward = rewards[Math.floor(Math.random() * rewards.length)];
-    } else {
-      let randomVal = Math.random() * totalWeight;
-      for (const reward of rewards) {
-        randomVal -= Number(reward.probability) || 0;
-        if (randomVal <= 0) {
-          selectedReward = reward;
-          break;
-        }
-      }
-    }
-
+    // 5. Force "10% OFF on Food Bill" (id: "food-10") as requested
+    let selectedReward = rewards.find((r) => r.id === "food-10" || r.rewardId === "food-10");
     if (!selectedReward) {
+      // fallback
       selectedReward = rewards[0];
     }
 
