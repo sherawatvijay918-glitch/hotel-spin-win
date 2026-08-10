@@ -35,10 +35,10 @@ interface SpinResult {
   expiresAt: string;
 }
 
-type Step = "form" | "wheel" | "coupon" | "blocked";
+type Step = "preview" | "form" | "wheel" | "coupon" | "blocked";
 
 export default function SpinPage() {
-  const [step, setStep] = useState<Step>("form");
+  const [step, setStep] = useState<Step>("preview");
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -257,11 +257,55 @@ export default function SpinPage() {
       <main className="flex-1 flex flex-col items-center justify-center py-6 z-10 max-w-lg mx-auto w-full">
 
 
+        {/* STEP 1: PREVIEW LOCK SCREEN (WHEEL PREVIEW) */}
+        {step === "preview" && (
+          <div className="w-full flex flex-col items-center space-y-6 animate-fade-in-up">
+            <div className="text-center space-y-1">
+              <span className="text-[10px] text-amber-700 font-bold uppercase tracking-widest bg-amber-50 border border-amber-500/20 px-3 py-1 rounded-full">
+                Step 1 of 4
+              </span>
+              <h2 className="text-2xl font-serif font-light text-slate-800 tracking-wider mt-2">
+                Spin & Win Exciting Rewards
+              </h2>
+              <div className="w-16 h-[1px] bg-amber-500/30 mx-auto my-3"></div>
+              <p className="text-xs text-slate-550 px-4">
+                Unlock your lucky spin at 7 Blue Hills. Tap spin below to register and win.
+              </p>
+            </div>
+
+            {/* Canvas Wheel Wrapper - Clickable to unlock form */}
+            <div 
+              onClick={() => setStep("form")}
+              className="w-full py-2 cursor-pointer transition transform hover:scale-[1.02] duration-300"
+            >
+              <SpinWheel
+                rewards={activeRewardsList}
+                targetRewardId={null}
+                onFinished={() => {}}
+                isSpinning={false}
+                setIsSpinning={() => {}}
+              />
+            </div>
+
+            {/* Unlock Button */}
+            <button
+              onClick={() => setStep("form")}
+              className="w-full max-w-[280px] py-4 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-xs uppercase tracking-widest select-none cursor-pointer flex items-center justify-center gap-2 shadow-sm animate-pulse"
+            >
+              <Gift size={16} />
+              SPIN NOW
+            </button>
+          </div>
+        )}
+
         {/* STEP 2: CUSTOMER DETAILS FORM */}
         {step === "form" && (
           <div className="w-full bg-white border border-slate-200 shadow-xl rounded-2xl p-6 md:p-8 space-y-6 animate-fade-in-up relative">
             <div className="text-center space-y-1 z-10 relative">
-              <h2 className="text-2xl font-serif font-light text-slate-800 tracking-wider">
+              <span className="text-[10px] text-amber-700 font-bold uppercase tracking-widest bg-amber-50 border border-amber-500/20 px-3 py-1 rounded-full">
+                Step 2 of 4
+              </span>
+              <h2 className="text-2xl font-serif font-light text-slate-800 tracking-wider mt-2">
                 Enter Your Details
               </h2>
               <div className="w-16 h-[1px] bg-amber-500/30 mx-auto my-3"></div>
@@ -340,7 +384,7 @@ export default function SpinPage() {
               </div>
 
               {/* Privacy Message */}
-              <div className="text-[10px] text-slate-550 leading-normal bg-slate-50 p-2.5 rounded-lg border border-slate-200 flex items-start gap-2">
+              <div className="text-[10px] text-slate-555 leading-normal bg-slate-50 p-2.5 rounded-lg border border-slate-200 flex items-start gap-2">
                 <ShieldCheck size={14} className="text-amber-600 shrink-0 mt-0.5" />
                 <span>Your details are used only for this offer and coupon verification. We value your privacy.</span>
               </div>
@@ -358,10 +402,6 @@ export default function SpinPage() {
                   I agree that I am eligible for only one spin under the terms of this marketing campaign.
                 </span>
               </label>
-
-              <p className="text-[10px] text-amber-700 mt-1 font-medium tracking-wide">
-                * Note: The "10% OFF on Food Bill" coupon is applicable on billing of ₹799 and above.
-              </p>
 
               <button
                 type="submit"
@@ -408,8 +448,15 @@ export default function SpinPage() {
               </div>
             )}
 
-            {/* Canvas Wheel */}
-            <div className="w-full py-2">
+            {/* Canvas Wheel - Clickable to spin when active */}
+            <div 
+              onClick={() => {
+                if (!isSpinning && !submitLoading) {
+                  triggerSpin();
+                }
+              }}
+              className={`w-full py-2 ${!isSpinning && !submitLoading ? "cursor-pointer transition transform hover:scale-[1.02] duration-300" : ""}`}
+            >
               <SpinWheel
                 rewards={activeRewardsList}
                 targetRewardId={targetRewardId}
