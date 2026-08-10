@@ -68,7 +68,24 @@ export async function POST(request: Request) {
         );
       }
 
-      const selectedRewardName = "FREE Cold Coffee";
+      const rand = Math.random() * 100;
+      let selectedRewardId = "food-10";
+      let selectedRewardName = "10% OFF on Food Bill";
+      
+      if (rand < 50) {
+        selectedRewardId = "food-10";
+        selectedRewardName = "10% OFF on Food Bill";
+      } else if (rand < 66.67) {
+        selectedRewardId = "cold-coffee";
+        selectedRewardName = "FREE Cold Coffee";
+      } else if (rand < 83.33) {
+        selectedRewardId = "french-fries";
+        selectedRewardName = "FREE French Fries";
+      } else {
+        selectedRewardId = "burger";
+        selectedRewardName = "FREE Burger";
+      }
+
       const couponCode = generateCouponCode();
       const now = new Date();
       const expiresAt = new Date();
@@ -82,7 +99,7 @@ export async function POST(request: Request) {
         instagramUsernameNormalized: "",
         email: email ? email.trim() : "",
         followConfirmed: true,
-        rewardId: "cold-coffee",
+        rewardId: selectedRewardId,
         rewardName: selectedRewardName,
         couponCode,
         createdAt: now.toISOString(),
@@ -109,7 +126,39 @@ export async function POST(request: Request) {
         rewardId: "cold-coffee",
         rewardName: "FREE Cold Coffee",
         description: "Enjoy a complimentary Cold Coffee with your meal.",
-        probability: 25.0,
+        probability: 16.67,
+        active: true,
+        validityDays: 7,
+        usageLimit: 5000,
+        usedCount: 0,
+      });
+    }
+
+    // Ensure "french-fries" reward exists
+    const frenchFriesRef = adminDb.collection("rewards").doc("french-fries");
+    const frenchFriesDoc = await frenchFriesRef.get();
+    if (!frenchFriesDoc.exists) {
+      await frenchFriesRef.set({
+        rewardId: "french-fries",
+        rewardName: "FREE French Fries",
+        description: "Enjoy a complimentary portion of French Fries with your order.",
+        probability: 16.67,
+        active: true,
+        validityDays: 7,
+        usageLimit: 5000,
+        usedCount: 0,
+      });
+    }
+
+    // Ensure "burger" reward exists
+    const burgerRef = adminDb.collection("rewards").doc("burger");
+    const burgerDoc = await burgerRef.get();
+    if (!burgerDoc.exists) {
+      await burgerRef.set({
+        rewardId: "burger",
+        rewardName: "FREE Burger",
+        description: "Enjoy a complimentary Burger with your meal.",
+        probability: 16.66,
         active: true,
         validityDays: 7,
         usageLimit: 5000,
@@ -195,8 +244,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "All rewards have reached their limit." }, { status: 500 });
     }
 
-    // 5. Force "FREE Cold Coffee" (id: "cold-coffee") as requested
-    let selectedReward = rewards.find((r) => r.id === "cold-coffee" || r.rewardId === "cold-coffee");
+    // 5. Select one of the four allowed rewards based on probabilities:
+    // 10% OFF (50%), FREE Cold Coffee (16.67%), FREE French Fries (16.67%), FREE Burger (16.66%)
+    const rand = Math.random() * 100;
+    let targetRewardId = "food-10";
+    if (rand < 50) {
+      targetRewardId = "food-10";
+    } else if (rand < 66.67) {
+      targetRewardId = "cold-coffee";
+    } else if (rand < 83.33) {
+      targetRewardId = "french-fries";
+    } else {
+      targetRewardId = "burger";
+    }
+
+    let selectedReward = rewards.find((r) => r.id === targetRewardId || r.rewardId === targetRewardId);
     if (!selectedReward) {
       // fallback
       selectedReward = rewards[0];

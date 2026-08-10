@@ -185,12 +185,29 @@ export default function SpinPage() {
 
       setWonCoupon(wonData);
       
-      // If won reward is FREE Cold Coffee, select one of the three segments on the wheel randomly
-      if (data.spin.rewardId === "cold-coffee") {
-        const coldCoffeeIds = ["cold-coffee", "cold-coffee-2", "cold-coffee-3"];
+      // If won reward is 10% OFF, select one of the three 10% segments on the wheel randomly
+      if (data.spin.rewardId === "food-10") {
+        const tenPercentIds = ["food-10", "food-10-2", "food-10-3"];
+        const randomTargetId = tenPercentIds[Math.floor(Math.random() * tenPercentIds.length)];
+        setTargetRewardId(randomTargetId);
+      } 
+      // If won reward is FREE Cold Coffee, select one of the two segments randomly
+      else if (data.spin.rewardId === "cold-coffee") {
+        const coldCoffeeIds = ["cold-coffee", "cold-coffee-2"];
         const randomTargetId = coldCoffeeIds[Math.floor(Math.random() * coldCoffeeIds.length)];
         setTargetRewardId(randomTargetId);
-      } else {
+      }
+      // If won reward is FREE French Fries, select one of the two segments randomly
+      else if (data.spin.rewardId === "french-fries") {
+        const frenchFriesIds = ["french-fries", "french-fries-2"];
+        const randomTargetId = frenchFriesIds[Math.floor(Math.random() * frenchFriesIds.length)];
+        setTargetRewardId(randomTargetId);
+      }
+      // If won reward is FREE Burger, select the burger segment
+      else if (data.spin.rewardId === "burger") {
+        setTargetRewardId("burger");
+      }
+      else {
         setTargetRewardId(data.spin.rewardId);
       }
       
@@ -235,16 +252,16 @@ export default function SpinPage() {
     }
   }, []);
 
-  // Pre-configured wheel segments (FREE Cold Coffee in 3 places as requested)
+  // Pre-configured wheel segments (Custom layout featuring 10% OFF, Cold Coffee, French Fries, and Burger)
   const activeRewardsList = [
-    { rewardId: "cold-coffee", rewardName: "FREE Cold Coffee", probability: 25 },
-    { rewardId: "welcome-drink", rewardName: "Welcome Drink FREE", probability: 20 },
-    { rewardId: "starter-free", rewardName: "Starter FREE", probability: 15 },
-    { rewardId: "cold-coffee-2", rewardName: "FREE Cold Coffee", probability: 25 },
-    { rewardId: "dessert-free", rewardName: "Dessert FREE", probability: 15 },
-    { rewardId: "breakfast-2", rewardName: "Breakfast for 2 FREE", probability: 10 },
-    { rewardId: "cold-coffee-3", rewardName: "FREE Cold Coffee", probability: 25 },
-    { rewardId: "room-upgrade", rewardName: "Room Upgrade FREE", probability: 5 },
+    { rewardId: "food-10", rewardName: "10% OFF on Food Bill", probability: 25 },
+    { rewardId: "cold-coffee", rewardName: "FREE Cold Coffee", probability: 20 },
+    { rewardId: "french-fries", rewardName: "FREE French Fries", probability: 15 },
+    { rewardId: "food-10-2", rewardName: "10% OFF on Food Bill", probability: 25 },
+    { rewardId: "burger", rewardName: "FREE Burger", probability: 15 },
+    { rewardId: "french-fries-2", rewardName: "FREE French Fries", probability: 15 },
+    { rewardId: "food-10-3", rewardName: "10% OFF on Food Bill", probability: 25 },
+    { rewardId: "cold-coffee-2", rewardName: "FREE Cold Coffee", probability: 20 },
   ];  return (
     <div className="min-h-screen text-slate-800 font-sans flex flex-col justify-between py-8 px-4 md:px-8 relative overflow-hidden bg-[url('/hotel_lobby_bg.png')] bg-cover bg-center">
       {/* Light overlay with blur for luxury aesthetic */}
