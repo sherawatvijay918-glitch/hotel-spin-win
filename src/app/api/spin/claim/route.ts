@@ -68,7 +68,7 @@ export async function POST(request: Request) {
         );
       }
 
-      const selectedRewardName = "10% OFF on Food Bill";
+      const selectedRewardName = "FREE Cold Coffee";
       const couponCode = generateCouponCode();
       const now = new Date();
       const expiresAt = new Date();
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
         instagramUsernameNormalized: "",
         email: email ? email.trim() : "",
         followConfirmed: true,
-        rewardId: "food-10",
+        rewardId: "cold-coffee",
         rewardName: selectedRewardName,
         couponCode,
         createdAt: now.toISOString(),
@@ -101,6 +101,22 @@ export async function POST(request: Request) {
     }
 
     // --- REAL FIREBASE MODE ---
+    // Ensure "cold-coffee" reward exists
+    const coldCoffeeRef = adminDb.collection("rewards").doc("cold-coffee");
+    const coldCoffeeDoc = await coldCoffeeRef.get();
+    if (!coldCoffeeDoc.exists) {
+      await coldCoffeeRef.set({
+        rewardId: "cold-coffee",
+        rewardName: "FREE Cold Coffee",
+        description: "Enjoy a complimentary Cold Coffee with your meal.",
+        probability: 25.0,
+        active: true,
+        validityDays: 7,
+        usageLimit: 5000,
+        usedCount: 0,
+      });
+    }
+
     // 2. Check Campaign Settings
     const campaignDoc = await adminDb.collection("settings").doc("campaign").get();
     if (!campaignDoc.exists) {
@@ -179,8 +195,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "All rewards have reached their limit." }, { status: 500 });
     }
 
-    // 5. Force "10% OFF on Food Bill" (id: "food-10") as requested
-    let selectedReward = rewards.find((r) => r.id === "food-10" || r.rewardId === "food-10");
+    // 5. Force "FREE Cold Coffee" (id: "cold-coffee") as requested
+    let selectedReward = rewards.find((r) => r.id === "cold-coffee" || r.rewardId === "cold-coffee");
     if (!selectedReward) {
       // fallback
       selectedReward = rewards[0];
